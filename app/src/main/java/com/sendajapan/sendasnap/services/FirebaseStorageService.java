@@ -1,15 +1,17 @@
 package com.sendajapan.sendasnap.services;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.provider.OpenableColumns;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
+import java.io.InputStream;
 
 public class FirebaseStorageService {
     private static final String TAG = "FirebaseStorageService";
@@ -32,25 +34,31 @@ public class FirebaseStorageService {
     
     /**
      * Upload image to Firebase Storage
+     * @param context Context for accessing ContentResolver
      * @param imageUri Local URI of the image
      * @param chatId Chat ID for organizing images
      * @param callback Callback for upload result
      */
-    public void uploadImage(Uri imageUri, String chatId, StorageCallback callback) {
+    public void uploadImage(Context context, Uri imageUri, String chatId, StorageCallback callback) {
         try {
-            // Compress image before upload
-            Bitmap bitmap = BitmapFactory.decodeFile(new File(imageUri.getPath()).getAbsolutePath());
+            Bitmap bitmap;
+            try (InputStream inputStream = context.getContentResolver().openInputStream(imageUri)) {
+                if (inputStream == null) {
+                    callback.onFailure(new Exception("Failed to open image stream"));
+                    return;
+                }
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            }
+            
             if (bitmap == null) {
                 callback.onFailure(new Exception("Failed to decode image"));
                 return;
             }
             
-            // Compress bitmap
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             int quality = 85;
             bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
             
-            // Reduce quality if still too large
             while (baos.toByteArray().length > MAX_IMAGE_SIZE && quality > 50) {
                 baos.reset();
                 quality -= 10;
@@ -95,20 +103,16 @@ public class FirebaseStorageService {
     
     /**
      * Upload file to Firebase Storage
+     * @param context Context for accessing ContentResolver
      * @param fileUri Local URI of the file
      * @param chatId Chat ID for organizing files
      * @param fileName Original file name
      * @param callback Callback for upload result
      */
-    public void uploadFile(Uri fileUri, String chatId, String fileName, StorageCallback callback) {
+    public void uploadFile(Context context, Uri fileUri, String chatId, String fileName, StorageCallback callback) {
         try {
-            File file = new File(fileUri.getPath());
-            if (!file.exists()) {
-                callback.onFailure(new Exception("File does not exist"));
-                return;
-            }
-            
-            if (file.length() > MAX_FILE_SIZE) {
+            long fileSize = getFileSize(context, fileUri);
+            if (fileSize > MAX_FILE_SIZE) {
                 callback.onFailure(new Exception("File size exceeds maximum limit (10MB)"));
                 return;
             }
@@ -153,6 +157,19 @@ public class FirebaseStorageService {
         } catch (Exception e) {
             callback.onFailure(e);
         }
+    }
+    
+    private long getFileSize(Context context, Uri uri) {
+        try (android.database.Cursor cursor = context.getContentResolver().query(uri, null, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
+                if (sizeIndex >= 0) {
+                    return cursor.getLong(sizeIndex);
+                }
+            }
+        } catch (Exception e) {
+        }
+        return 0;
     }
     
     /**

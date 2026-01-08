@@ -114,7 +114,7 @@ public class TaskAttachmentAdapter extends RecyclerView.Adapter<TaskAttachmentAd
                                     (filePathOrUrl.startsWith("content://") || filePathOrUrl.startsWith("file://"));
                 boolean isLocalFile = !isUrl && !isRelativePath && !isLocalUri && 
                                      filePathOrUrl != null && 
-                                     new File(filePathOrUrl).exists();
+                                     isFileInAppStorage(filePathOrUrl);
 
 
                 if (isUrl || isRelativePath) {
@@ -207,12 +207,33 @@ public class TaskAttachmentAdapter extends RecyclerView.Adapter<TaskAttachmentAd
             // If it's not a URL, not a content URI, and not a file URI, it's likely a server path
             // Server paths can be relative (task-attachments/file.jpg) or absolute from root (/storage/...)
             boolean isLocalUri = filePath.startsWith("content://") || filePath.startsWith("file://");
-            boolean isAbsoluteLocalPath = !isLocalUri && new File(filePath).isAbsolute() && new File(filePath).exists();
+            boolean isAbsoluteLocalPath = !isLocalUri && isFileInAppStorage(filePath);
             
             return !filePath.startsWith("http://") && 
                    !filePath.startsWith("https://") && 
                    !isLocalUri &&
                    !isAbsoluteLocalPath;
+        }
+
+        private boolean isFileInAppStorage(String filePath) {
+            if (filePath == null || context == null) return false;
+            try {
+                File file = new File(filePath);
+                if (!file.exists() || !file.isFile()) {
+                    return false;
+                }
+                
+                // Only access files in app-specific directories
+                File cacheDir = context.getCacheDir();
+                File filesDir = context.getFilesDir();
+                File externalFilesDir = context.getExternalFilesDir(null);
+                
+                return (cacheDir != null && filePath.startsWith(cacheDir.getAbsolutePath())) ||
+                       (filesDir != null && filePath.startsWith(filesDir.getAbsolutePath())) ||
+                       (externalFilesDir != null && filePath.startsWith(externalFilesDir.getAbsolutePath()));
+            } catch (Exception e) {
+                return false;
+            }
         }
 
     }

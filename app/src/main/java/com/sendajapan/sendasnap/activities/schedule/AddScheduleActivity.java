@@ -4,10 +4,13 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -112,8 +115,10 @@ public class AddScheduleActivity extends AppCompatActivity {
         hapticHelper = HapticFeedbackHelper.getInstance(this);
         prefsManager = SharedPrefsManager.getInstance(this);
         currentUser = prefsManager.getUser();
-        taskViewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication())).get(TaskViewModel.class);
-        userViewModel = new ViewModelProvider(this, ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication())).get(UserViewModel.class);
+        taskViewModel = new ViewModelProvider(this,
+                ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication())).get(TaskViewModel.class);
+        userViewModel = new ViewModelProvider(this,
+                ViewModelProvider.AndroidViewModelFactory.getInstance(getApplication())).get(UserViewModel.class);
     }
 
     private void checkUserRole() {
@@ -318,7 +323,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                 boolean exists = false;
                 for (UserData existing : selectedAssignees) {
                     if (existing != null && user != null &&
-                        existing.getId() == user.getId()) {
+                            existing.getId() == user.getId()) {
                         exists = true;
                         break;
                     }
@@ -328,7 +333,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                 }
             } else {
                 selectedAssignees.removeIf(u -> u != null && user != null &&
-                    u.getId() == user.getId());
+                        u.getId() == user.getId());
             }
 
             updateAssigneeChips();
@@ -343,8 +348,7 @@ public class AddScheduleActivity extends AppCompatActivity {
                     popupView,
                     width,
                     ViewGroup.LayoutParams.WRAP_CONTENT,
-                    true
-            );
+                    true);
 
             userDropdownPopup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             userDropdownPopup.setElevation(8f);
@@ -371,7 +375,8 @@ public class AddScheduleActivity extends AppCompatActivity {
             binding.chipGroupAssignees.setVisibility(View.VISIBLE);
 
             for (UserData assignee : selectedAssignees) {
-                if (assignee == null) continue;
+                if (assignee == null)
+                    continue;
 
                 Chip chip = new Chip(this);
                 chip.setText(assignee.getName() != null ? assignee.getName() : "");
@@ -710,31 +715,30 @@ public class AddScheduleActivity extends AppCompatActivity {
 
             taskViewModel.updateTask(editingTask.getId(), params, files, attachmentsUpdate,
                     new TaskViewModel.TaskCallback<Task>() {
-                @Override
-                public void onSuccess(Task updatedTask) {
-                    AlarmHelper.setTaskAlarm(AddScheduleActivity.this, updatedTask);
+                        @Override
+                        public void onSuccess(Task updatedTask) {
+                            AlarmHelper.setTaskAlarm(AddScheduleActivity.this, updatedTask);
 
-                    CookieBarToastHelper.showSuccess(
-                            AddScheduleActivity.this,
-                            "Task Updated",
-                            "Task has been updated successfully",
-                            CookieBarToastHelper.SHORT_DURATION
-                    );
+                            CookieBarToastHelper.showSuccess(
+                                    AddScheduleActivity.this,
+                                    "Task Updated",
+                                    "Task has been updated successfully",
+                                    CookieBarToastHelper.SHORT_DURATION);
 
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("task", updatedTask);
-                    setResult(RESULT_OK, resultIntent);
+                            Intent resultIntent = new Intent();
+                            resultIntent.putExtra("task", updatedTask);
+                            setResult(RESULT_OK, resultIntent);
 
-                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                        finish();
-                    }, 500);
-                }
+                            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                                finish();
+                            }, 500);
+                        }
 
-                @Override
-                public void onError(String message, int errorCode) {
-                    showValidationErrors(message, errorCode);
-                }
-            });
+                        @Override
+                        public void onError(String message, int errorCode) {
+                            showValidationErrors(message, errorCode);
+                        }
+                    });
         } else {
             TaskViewModel.CreateTaskParams params = new TaskViewModel.CreateTaskParams();
             params.title = title;
@@ -773,22 +777,20 @@ public class AddScheduleActivity extends AppCompatActivity {
                     FcmNotificationSender.sendTaskAssignmentNotifications(
                             AddScheduleActivity.this,
                             createdTask,
-                            taskAssignees
-                    );
+                            taskAssignees);
 
                     // Show cookiebar notification with sound
                     String notificationTitle = "Task Created";
                     String notificationMessage = createdTask.getTitle() != null && !createdTask.getTitle().isEmpty()
                             ? "Task \"" + createdTask.getTitle() + "\" has been created and assigned"
                             : "Task has been created and assigned";
-                    
+
                     CookieBarToastHelper.showSuccess(
                             AddScheduleActivity.this,
                             notificationTitle,
                             notificationMessage,
-                            CookieBarToastHelper.SHORT_DURATION
-                    );
-                    
+                            CookieBarToastHelper.SHORT_DURATION);
+
                     // Play notification sound
                     SoundHelper.playNotificationSound(AddScheduleActivity.this);
 
@@ -807,22 +809,24 @@ public class AddScheduleActivity extends AppCompatActivity {
     }
 
     private boolean validateFileSizes() {
-        // Only validate new local files (from attachmentUris), not already uploaded files
+        // Only validate new local files (from attachmentUris), not already uploaded
+        // files
         for (Uri uri : attachmentUris) {
-            if (uri == null) continue;
-            
+            if (uri == null)
+                continue;
+
             // Skip if it's already a server URL (http/https)
             String uriString = uri.toString();
             if (uriString.startsWith("http://") || uriString.startsWith("https://")) {
                 continue; // Already uploaded, skip validation
             }
-            
+
             long fileSize = getFileSize(uri);
             if (fileSize <= 0) {
                 // If we can't determine size, show warning but allow (might be a server file)
                 continue;
             }
-            
+
             // Determine if it's an image from MIME type
             String mimeType = getContentResolver().getType(uri);
             if (mimeType == null || mimeType.isEmpty()) {
@@ -831,25 +835,28 @@ public class AddScheduleActivity extends AppCompatActivity {
                 String extension = getFileExtension(fileName);
                 mimeType = getMimeTypeFromExtension(extension);
             }
-            
+
             boolean isImage = mimeType != null && mimeType.startsWith("image/");
             long maxSize = isImage ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
-            
+
             if (fileSize > maxSize) {
                 String fileName = getFileName(uri);
                 String sizeLimit = isImage ? "5MB" : "10MB";
                 Toast.makeText(this,
-                        "File size exceeds " + sizeLimit + " limit: " + fileName + " (" + formatFileSize(fileSize) + ")",
+                        "File size exceeds " + sizeLimit + " limit: " + fileName + " (" + formatFileSize(fileSize)
+                                + ")",
                         Toast.LENGTH_LONG).show();
                 return false;
             }
         }
         return true;
     }
-    
+
     private String formatFileSize(long bytes) {
-        if (bytes < 1024) return bytes + " B";
-        if (bytes < 1024 * 1024) return String.format("%.2f KB", bytes / 1024.0);
+        if (bytes < 1024)
+            return bytes + " B";
+        if (bytes < 1024 * 1024)
+            return String.format("%.2f KB", bytes / 1024.0);
         return String.format("%.2f MB", bytes / (1024.0 * 1024.0));
     }
 
@@ -870,7 +877,8 @@ public class AddScheduleActivity extends AppCompatActivity {
     private File createTempFileFromUri(Uri uri) {
         try {
             java.io.InputStream inputStream = getContentResolver().openInputStream(uri);
-            if (inputStream == null) return null;
+            if (inputStream == null)
+                return null;
 
             String fileName = getFileName(uri);
             File tempFile = new File(getCacheDir(), "upload_" + System.currentTimeMillis() + "_" + fileName);
@@ -997,28 +1005,29 @@ public class AddScheduleActivity extends AppCompatActivity {
                 String extension = getFileExtension(fileName);
                 mimeType = getMimeTypeFromExtension(extension);
             }
-            
+
             long fileSize = getFileSize(fileUri);
             if (fileSize <= 0) {
                 // Try alternative method to get file size
                 fileSize = getFileSizeAlternative(fileUri);
             }
-            
+
             if (fileSize <= 0) {
                 Toast.makeText(this,
                         "Could not determine file size: " + fileName,
                         Toast.LENGTH_SHORT).show();
                 return;
             }
-            
+
             // Check if it's an image
             boolean isImage = mimeType != null && mimeType.startsWith("image/");
             long maxSize = isImage ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
-            
+
             if (fileSize > maxSize) {
                 String sizeLimit = isImage ? "5MB" : "10MB";
                 Toast.makeText(this,
-                        "File size exceeds " + sizeLimit + " limit: " + fileName + " (" + formatFileSize(fileSize) + ")",
+                        "File size exceeds " + sizeLimit + " limit: " + fileName + " (" + formatFileSize(fileSize)
+                                + ")",
                         Toast.LENGTH_LONG).show();
                 return;
             }
@@ -1043,10 +1052,11 @@ public class AddScheduleActivity extends AppCompatActivity {
             Toast.makeText(this, "Error adding file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     private String getMimeTypeFromExtension(String extension) {
-        if (extension == null || extension.isEmpty()) return "*/*";
-        
+        if (extension == null || extension.isEmpty())
+            return "*/*";
+
         switch (extension.toLowerCase()) {
             case "jpg":
             case "jpeg":
@@ -1073,10 +1083,10 @@ public class AddScheduleActivity extends AppCompatActivity {
     private String getFileName(Uri uri) {
         String fileName = null;
         try {
-            String[] projection = { android.provider.MediaStore.MediaColumns.DISPLAY_NAME };
-            android.database.Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
+            String[] projection = { MediaStore.MediaColumns.DISPLAY_NAME };
+            Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
             if (cursor != null && cursor.moveToFirst()) {
-                int nameIndex = cursor.getColumnIndex(android.provider.MediaStore.MediaColumns.DISPLAY_NAME);
+                int nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
                 if (nameIndex != -1) {
                     fileName = cursor.getString(nameIndex);
                 }
@@ -1094,19 +1104,19 @@ public class AddScheduleActivity extends AppCompatActivity {
     }
 
     private long getFileSize(Uri uri) {
-        if (uri == null) return 0;
-        
+        if (uri == null)
+            return 0;
+
         try {
-            // Method 1: Try MediaStore first (works for media files)
-            android.database.Cursor cursor = getContentResolver().query(
-                    uri, 
-                    new String[]{android.provider.MediaStore.MediaColumns.SIZE}, 
-                    null, 
-                    null, 
-                    null
-            );
+            // Method 1: Try OpenableColumns.SIZE (works for all content URIs)
+            Cursor cursor = getContentResolver().query(
+                    uri,
+                    null,
+                    null,
+                    null,
+                    null);
             if (cursor != null && cursor.moveToFirst()) {
-                int sizeIndex = cursor.getColumnIndex(android.provider.MediaStore.MediaColumns.SIZE);
+                int sizeIndex = cursor.getColumnIndex(OpenableColumns.SIZE);
                 if (sizeIndex != -1) {
                     long size = cursor.getLong(sizeIndex);
                     cursor.close();
@@ -1120,28 +1130,65 @@ public class AddScheduleActivity extends AppCompatActivity {
         } catch (Exception e) {
             // Fall through to alternative method
         }
-        
-        // Method 2: Try alternative method
+
+        try {
+            // Method 2: Try MediaStore.MediaColumns.SIZE (works for media files)
+            Cursor cursor = getContentResolver().query(
+                    uri,
+                    new String[] { MediaStore.MediaColumns.SIZE },
+                    null,
+                    null,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int sizeIndex = cursor.getColumnIndex(MediaStore.MediaColumns.SIZE);
+                if (sizeIndex != -1) {
+                    long size = cursor.getLong(sizeIndex);
+                    cursor.close();
+                    if (size > 0) {
+                        return size;
+                    }
+                } else {
+                    cursor.close();
+                }
+            }
+        } catch (Exception e) {
+            // Fall through to alternative method
+        }
+
+        // Method 3: Try alternative method
         return getFileSizeAlternative(uri);
     }
-    
+
     private long getFileSizeAlternative(Uri uri) {
-        if (uri == null) return 0;
-        
+        if (uri == null)
+            return 0;
+
         try {
-            // For file:// URIs, try direct file access
+            // For file:// URIs, only access if it's in app-specific storage
             if ("file".equals(uri.getScheme())) {
                 try {
-                    File file = new File(uri.getPath());
-                    if (file.exists() && file.isFile()) {
-                        return file.length();
+                    String path = uri.getPath();
+                    if (path != null) {
+                        File file = new File(path);
+                        // Only access files in app-specific directories
+                        File cacheDir = getCacheDir();
+                        File filesDir = getFilesDir();
+                        File externalFilesDir = getExternalFilesDir(null);
+
+                        boolean isInAppStorage = (cacheDir != null && path.startsWith(cacheDir.getAbsolutePath())) ||
+                                (filesDir != null && path.startsWith(filesDir.getAbsolutePath())) ||
+                                (externalFilesDir != null && path.startsWith(externalFilesDir.getAbsolutePath()));
+
+                        if (isInAppStorage && file.exists() && file.isFile()) {
+                            return file.length();
+                        }
                     }
                 } catch (Exception e) {
                     // Ignore
                 }
             }
-            
-            // For content:// URIs, try using AssetFileDescriptor which is more efficient
+
+            // For content:// URIs, use AssetFileDescriptor (MediaStore API compatible)
             try (android.content.res.AssetFileDescriptor afd = getContentResolver().openAssetFileDescriptor(uri, "r")) {
                 if (afd != null) {
                     long size = afd.getLength();
@@ -1150,27 +1197,12 @@ public class AddScheduleActivity extends AppCompatActivity {
                     }
                 }
             } catch (Exception e) {
-                // Fall through to stream method
-            }
-            
-            // Last resort: For content:// URIs, try reading the stream (but limit to avoid reading huge files)
-            // Only use this if other methods fail, and limit the read
-            try (java.io.InputStream inputStream = getContentResolver().openInputStream(uri)) {
-                if (inputStream != null) {
-                    // Use available() as a hint, but it's not always accurate
-                    int available = inputStream.available();
-                    if (available > 0 && available < Integer.MAX_VALUE) {
-                        return available;
-                    }
-                    // If available() doesn't work, we'll need to read, but limit it
-                    // For validation purposes, we can estimate or read a small portion
-                    return 0; // Return 0 to indicate we can't determine size reliably
-                }
+                // Fall through
             }
         } catch (Exception e) {
             // Return 0 if we can't determine size
         }
-        
+
         return 0;
     }
 
@@ -1217,25 +1249,39 @@ public class AddScheduleActivity extends AppCompatActivity {
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 startActivity(Intent.createChooser(intent, "Open file"));
             } else {
-                File file = new File(filePathOrUrl);
-                if (file.exists()) {
-                    Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
-                            this,
-                            getPackageName() + ".fileprovider",
-                            file);
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    String mimeType = attachment.getMimeType();
-                    if (mimeType == null || mimeType.isEmpty()) {
-                        mimeType = getContentResolver().getType(fileUri);
+                // For raw file paths, only access if in app-specific storage
+                try {
+                    File file = new File(filePathOrUrl);
+                    File cacheDir = getCacheDir();
+                    File filesDir = getFilesDir();
+                    File externalFilesDir = getExternalFilesDir(null);
+
+                    boolean isInAppStorage = (cacheDir != null && filePathOrUrl.startsWith(cacheDir.getAbsolutePath()))
+                            ||
+                            (filesDir != null && filePathOrUrl.startsWith(filesDir.getAbsolutePath())) ||
+                            (externalFilesDir != null && filePathOrUrl.startsWith(externalFilesDir.getAbsolutePath()));
+
+                    if (isInAppStorage && file.exists() && file.isFile()) {
+                        Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
+                                this,
+                                getPackageName() + ".fileprovider",
+                                file);
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        String mimeType = attachment.getMimeType();
+                        if (mimeType == null || mimeType.isEmpty()) {
+                            mimeType = getContentResolver().getType(fileUri);
+                        }
+                        if (mimeType == null) {
+                            mimeType = "*/*";
+                        }
+                        intent.setDataAndType(fileUri, mimeType);
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(Intent.createChooser(intent, "Open file"));
+                    } else {
+                        Toast.makeText(this, "File not found or not accessible", Toast.LENGTH_SHORT).show();
                     }
-                    if (mimeType == null) {
-                        mimeType = "*/*";
-                    }
-                    intent.setDataAndType(fileUri, mimeType);
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(Intent.createChooser(intent, "Open file"));
-                } else {
-                    Toast.makeText(this, "File not found", Toast.LENGTH_SHORT).show();
+                } catch (Exception e) {
+                    Toast.makeText(this, "Error opening file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             }
 

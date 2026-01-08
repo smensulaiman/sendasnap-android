@@ -467,7 +467,7 @@ public class ChatActivity extends AppCompatActivity {
         CookieBarToastHelper.showInfo(this, "Uploading", "Uploading image...",
                 CookieBarToastHelper.SHORT_DURATION);
 
-        storageService.uploadImage(imageUri, chatId, new FirebaseStorageService.StorageCallback() {
+        storageService.uploadImage(this, imageUri, chatId, new FirebaseStorageService.StorageCallback() {
             @Override
             public void onSuccess(String downloadUrl) {
                 chatService.sendImageMessage(chatId, otherUserId, downloadUrl,
@@ -487,7 +487,7 @@ public class ChatActivity extends AppCompatActivity {
         CookieBarToastHelper.showInfo(this, "Uploading", "Uploading file...",
                 CookieBarToastHelper.SHORT_DURATION);
 
-        storageService.uploadFile(fileUri, chatId, fileName, new FirebaseStorageService.StorageCallback() {
+        storageService.uploadFile(this, fileUri, chatId, fileName, new FirebaseStorageService.StorageCallback() {
             @Override
             public void onSuccess(String downloadUrl) {
                 chatService.sendFileMessage(chatId, otherUserId, downloadUrl, fileName,

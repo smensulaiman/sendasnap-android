@@ -65,8 +65,7 @@ public class VehicleDetailsActivity extends AppCompatActivity {
 
     private Vehicle vehicle;
     private Uri cameraImageUri;
-    private String cameraImagePath;
-    private final List<String> pendingImagePaths = new ArrayList<>();
+    private final List<Uri> pendingImageUris = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -157,26 +156,33 @@ public class VehicleDetailsActivity extends AppCompatActivity {
             vehiclePhotos = new ArrayList<>();
         }
 
-        vehicleImageAdapter = new VehicleImageGridAdapter(vehiclePhotos);
-        // Create final reference for lambda
+        if (vehicleImageAdapter == null) {
+            vehicleImageAdapter = new VehicleImageGridAdapter(vehiclePhotos);
+            GridLayoutManager vehicleGridLayoutManager = new GridLayoutManager(this, 3);
+            binding.recyclerViewVehicleImages.setLayoutManager(vehicleGridLayoutManager);
+            binding.recyclerViewVehicleImages.setAdapter(vehicleImageAdapter);
+        } else {
+            vehicleImageAdapter.updateImages(vehiclePhotos);
+        }
+
+        // Update click listener with current photos list
         final List<String> finalVehiclePhotos = vehiclePhotos;
         vehicleImageAdapter.setOnImageClickListener((imageUrl, position) -> {
             hapticHelper.vibrateClick();
             showImagePreview(finalVehiclePhotos, position);
         });
-        GridLayoutManager vehicleGridLayoutManager = new GridLayoutManager(this, 3);
-        binding.recyclerViewVehicleImages.setLayoutManager(vehicleGridLayoutManager);
-        binding.recyclerViewVehicleImages.setAdapter(vehicleImageAdapter);
 
-        pendingImageAdapter = new PendingImageAdapter(pendingImagePaths);
+        pendingImageAdapter = new PendingImageAdapter(convertUrisToStrings(pendingImageUris));
         GridLayoutManager pendingGridLayoutManager = new GridLayoutManager(this, 3);
         binding.recyclerViewPendingImages.setLayoutManager(pendingGridLayoutManager);
         binding.recyclerViewPendingImages.setAdapter(pendingImageAdapter);
 
         pendingImageAdapter.setOnDeleteClickListener(position -> {
             hapticHelper.vibrateClick();
-            pendingImagePaths.remove(position);
-            pendingImageAdapter.notifyItemRemoved(position);
+            pendingImageUris.remove(position);
+            if (pendingImageAdapter != null) {
+                pendingImageAdapter.updateImages(convertUrisToStrings(pendingImageUris));
+            }
             updatePendingImagesVisibility();
         });
     }
@@ -185,16 +191,14 @@ public class VehicleDetailsActivity extends AppCompatActivity {
         cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(),
                 result -> {
-                    if (result && cameraImagePath != null) {
-                        if (new File(cameraImagePath).exists()) {
-                            pendingImagePaths.add(cameraImagePath);
-                            pendingImageAdapter.notifyItemInserted(pendingImagePaths.size() - 1);
-                            updatePendingImagesVisibility();
-
+                    if (result && cameraImageUri != null) {
+                        pendingImageUris.add(cameraImageUri);
+                        if (pendingImageAdapter == null) {
+                            setupImageGrids();
                         } else {
-                            CookieBarToastHelper.showError(this, "Error", "Failed to save photo",
-                                    CookieBarToastHelper.LONG_DURATION);
+                            pendingImageAdapter.updateImages(convertUrisToStrings(pendingImageUris));
                         }
+                        updatePendingImagesVisibility();
                     } else if (!result) {
                         CookieBarToastHelper.showInfo(this, "Cancelled", "Photo capture cancelled",
                                 CookieBarToastHelper.SHORT_DURATION);
@@ -205,21 +209,19 @@ public class VehicleDetailsActivity extends AppCompatActivity {
                 new ActivityResultContracts.GetMultipleContents(),
                 uris -> {
                     if (uris != null && !uris.isEmpty()) {
-                        for (Uri uri : uris) {
-                            String imagePath = getRealPathFromURI(uri);
-                            if (imagePath != null) {
-                                pendingImagePaths.add(imagePath);
-                            }
+                        pendingImageUris.addAll(uris);
+                        if (pendingImageAdapter == null) {
+                            setupImageGrids();
+                        } else {
+                            pendingImageAdapter.updateImages(convertUrisToStrings(pendingImageUris));
                         }
-
-                        pendingImageAdapter.notifyDataSetChanged();
                         updatePendingImagesVisibility();
                     }
                 });
     }
 
     private void updatePendingImagesVisibility() {
-        if (pendingImagePaths.isEmpty()) {
+        if (pendingImageUris.isEmpty()) {
             binding.recyclerViewPendingImages.setVisibility(View.GONE);
             binding.btnUploadPhotos.setVisibility(View.GONE);
         } else {
@@ -348,8 +350,6 @@ public class VehicleDetailsActivity extends AppCompatActivity {
                 image.createNewFile();
             }
 
-            cameraImagePath = image.getAbsolutePath();
-
             return FileProvider.getUriForFile(this,
                     getPackageName() + ".fileprovider", image);
         } catch (Exception e) {
@@ -359,25 +359,16 @@ public class VehicleDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private String getRealPathFromURI(Uri uri) {
-        try {
-            if (uri.getScheme().equals("file")) {
-                return uri.getPath();
-            } else if (uri.getScheme().equals("content")) {
-                String[] projection = { MediaStore.Images.Media.DATA };
-                android.database.Cursor cursor = getContentResolver().query(uri, projection, null, null, null);
-                if (cursor != null) {
-                    int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-                    cursor.moveToFirst();
-                    String path = cursor.getString(column_index);
-                    cursor.close();
-                    return path;
-                }
+    private List<String> convertUrisToStrings(List<Uri> uris) {
+        List<String> paths = new ArrayList<>();
+        for (Uri uri : uris) {
+            if (uri.getScheme() != null && uri.getScheme().equals("file")) {
+                paths.add(uri.getPath());
+            } else {
+                paths.add(uri.toString());
             }
-        } catch (Exception e) {
-            return uri.getPath();
         }
-        return uri.getPath();
+        return paths;
     }
 
     @Override
@@ -415,7 +406,7 @@ public class VehicleDetailsActivity extends AppCompatActivity {
     }
 
     private void uploadPendingImages() {
-        if (pendingImagePaths.isEmpty()) {
+        if (pendingImageUris.isEmpty()) {
             CookieBarToastHelper.showInfo(this, "No Photos", "No photos to upload",
                     CookieBarToastHelper.SHORT_DURATION);
             return;
@@ -439,7 +430,7 @@ public class VehicleDetailsActivity extends AppCompatActivity {
             loadingDialog.show();
         }
 
-        imageUploadService.uploadImages(vehicleId, new ArrayList<>(pendingImagePaths),
+        imageUploadService.uploadImages(vehicleId, new ArrayList<>(pendingImageUris),
                 new VehicleImageUploadService.UploadCallback() {
                     @SuppressLint("NotifyDataSetChanged")
                     @Override
@@ -461,13 +452,23 @@ public class VehicleDetailsActivity extends AppCompatActivity {
                                 vehicle = updatedVehicle;
                             }
 
-                            pendingImagePaths.clear();
+                            pendingImageUris.clear();
                             pendingImageAdapter.notifyDataSetChanged();
 
                             populateVehicleData();
-                            setupImageGrids();
 
-                            vehicleImageAdapter.notifyDataSetChanged();
+                            // Update vehicle photos in adapter
+                            List<String> updatedPhotos = updatedVehicle.getVehiclePhotos();
+                            if (updatedPhotos == null) {
+                                updatedPhotos = new ArrayList<>();
+                            }
+
+                            if (vehicleImageAdapter != null) {
+                                vehicleImageAdapter.updateImages(updatedPhotos);
+                            } else {
+                                setupImageGrids();
+                            }
+
                             updatePendingImagesVisibility();
 
                             CookieBarToastHelper.showSuccess(VehicleDetailsActivity.this, "Success",

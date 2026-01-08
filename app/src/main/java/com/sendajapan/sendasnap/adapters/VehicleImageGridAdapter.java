@@ -17,7 +17,7 @@ import java.util.List;
 
 public class VehicleImageGridAdapter extends RecyclerView.Adapter<VehicleImageGridAdapter.ImageViewHolder> {
 
-    private final List<String> imageUrls;
+    private List<String> imageUrls;
     private OnImageClickListener onImageClickListener;
 
     public interface OnImageClickListener {
@@ -25,11 +25,27 @@ public class VehicleImageGridAdapter extends RecyclerView.Adapter<VehicleImageGr
     }
 
     public VehicleImageGridAdapter(List<String> imageUrls) {
-        this.imageUrls = imageUrls;
+        this.imageUrls = imageUrls != null ? imageUrls : new java.util.ArrayList<>();
     }
 
     public void setOnImageClickListener(OnImageClickListener listener) {
         this.onImageClickListener = listener;
+    }
+
+    public void updateImages(List<String> newImageUrls) {
+        if (newImageUrls == null) {
+            newImageUrls = new java.util.ArrayList<>();
+        }
+        int oldSize = this.imageUrls.size();
+        this.imageUrls = newImageUrls;
+        int newSize = this.imageUrls.size();
+        
+        if (newSize > oldSize) {
+            notifyItemRangeInserted(oldSize, newSize - oldSize);
+        } else if (newSize < oldSize) {
+            notifyItemRangeRemoved(newSize, oldSize - newSize);
+        }
+        notifyItemRangeChanged(0, Math.min(oldSize, newSize));
     }
 
     @NonNull

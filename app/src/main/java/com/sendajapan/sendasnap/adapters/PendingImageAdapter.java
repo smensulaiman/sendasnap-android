@@ -17,7 +17,7 @@ import java.util.List;
 
 public class PendingImageAdapter extends RecyclerView.Adapter<PendingImageAdapter.PendingImageViewHolder> {
 
-    private final List<String> pendingImagePaths;
+    private List<String> pendingImagePaths;
     private OnDeleteClickListener onDeleteClickListener;
 
     public interface OnDeleteClickListener {
@@ -25,11 +25,30 @@ public class PendingImageAdapter extends RecyclerView.Adapter<PendingImageAdapte
     }
 
     public PendingImageAdapter(List<String> pendingImagePaths) {
-        this.pendingImagePaths = pendingImagePaths;
+        this.pendingImagePaths = pendingImagePaths != null ? pendingImagePaths : new java.util.ArrayList<>();
     }
 
     public void setOnDeleteClickListener(OnDeleteClickListener listener) {
         this.onDeleteClickListener = listener;
+    }
+
+    public void updateImages(List<String> newImagePaths) {
+        if (newImagePaths == null) {
+            newImagePaths = new java.util.ArrayList<>();
+        }
+        int oldSize = this.pendingImagePaths.size();
+        this.pendingImagePaths = newImagePaths;
+        int newSize = this.pendingImagePaths.size();
+        
+        if (newSize > oldSize) {
+            notifyItemRangeInserted(oldSize, newSize - oldSize);
+            notifyItemRangeChanged(0, oldSize);
+        } else if (newSize < oldSize) {
+            notifyItemRangeRemoved(newSize, oldSize - newSize);
+            notifyItemRangeChanged(0, newSize);
+        } else {
+            notifyItemRangeChanged(0, newSize);
+        }
     }
 
     @NonNull

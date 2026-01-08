@@ -1,8 +1,12 @@
 package com.sendajapan.sendasnap.services;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
+import android.provider.OpenableColumns;
 
 import com.google.gson.Gson;
 import com.sendajapan.sendasnap.models.ErrorResponse;
@@ -14,6 +18,7 @@ import com.sendajapan.sendasnap.networking.RetrofitClient;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,31 +53,27 @@ public class VehicleImageUploadService {
      * Upload vehicle images to the server
      * 
      * @param vehicleId  The vehicle ID (integer from external database)
-     * @param imagePaths List of image file paths
+     * @param imageUris  List of image URIs (content:// or file://)
      * @param callback   Callback for success/error handling
      */
-    public void uploadImages(int vehicleId, List<String> imagePaths, UploadCallback callback) {
-        // Validate inputs
-        if (imagePaths == null || imagePaths.isEmpty()) {
+    public void uploadImages(int vehicleId, List<Uri> imageUris, UploadCallback callback) {
+        if (imageUris == null || imageUris.isEmpty()) {
             callback.onError("No images to upload", 422);
             return;
         }
 
-        // Validate and prepare image files
         List<MultipartBody.Part> imageParts = new ArrayList<>();
         List<File> imageFiles = new ArrayList<>();
-        List<File> tempFiles = new ArrayList<>(); // Track temporary compressed files
+        List<File> tempFiles = new ArrayList<>();
 
-        for (String imagePath : imagePaths) {
-            File imageFile = new File(imagePath);
-
-            // Check if file exists
-            if (!imageFile.exists() || !imageFile.isFile()) {
-                callback.onError("Image file not found: " + imageFile.getName(), 422);
+        for (Uri imageUri : imageUris) {
+            File imageFile = getFileFromUri(imageUri);
+            if (imageFile == null || !imageFile.exists() || !imageFile.isFile()) {
+                cleanupTempFiles(tempFiles);
+                callback.onError("Image file not found or cannot be accessed", 422);
                 return;
             }
 
-            // Compress image if it's larger than 2MB
             File fileToUpload = imageFile;
             if (imageFile.length() > MAX_FILE_SIZE) {
                 try {
@@ -84,15 +85,12 @@ public class VehicleImageUploadService {
                     }
                 } catch (Exception e) {
                     fileToUpload = imageFile;
-                    fileToUpload = imageFile;
                 }
             }
 
-            // Final check: if still too large after compression, return error
             if (fileToUpload.length() > MAX_FILE_SIZE) {
-                // Clean up temp files before returning
                 cleanupTempFiles(tempFiles);
-                callback.onError("Image file too large (max 2MB) even after compression: " + imageFile.getName(), 422);
+                callback.onError("Image file too large (max 2MB) even after compression", 422);
                 return;
             }
 
@@ -195,6 +193,104 @@ public class VehicleImageUploadService {
         }
 
         return defaultMessage;
+    }
+
+    /**
+     * Get File from Uri, handling both content:// and file:// URIs
+     * Uses MediaStore API and ContentResolver for content URIs
+     */
+    private File getFileFromUri(Uri uri) {
+        if (uri == null) {
+            return null;
+        }
+
+        if ("file".equals(uri.getScheme())) {
+            String path = uri.getPath();
+            if (path != null) {
+                File file = new File(path);
+                // Only access files in app-specific directories
+                File cacheDir = context.getCacheDir();
+                File filesDir = context.getFilesDir();
+                File externalFilesDir = context.getExternalFilesDir(null);
+
+                boolean isInAppStorage = (cacheDir != null && path.startsWith(cacheDir.getAbsolutePath())) ||
+                        (filesDir != null && path.startsWith(filesDir.getAbsolutePath())) ||
+                        (externalFilesDir != null && path.startsWith(externalFilesDir.getAbsolutePath()));
+
+                if (isInAppStorage && file.exists() && file.isFile()) {
+                    return file;
+                }
+            }
+            return null;
+        } else if ("content".equals(uri.getScheme())) {
+            try {
+                // Use MediaStore API to get file name
+                String fileName = getFileNameFromUri(uri);
+                if (fileName == null || fileName.isEmpty()) {
+                    fileName = "temp_image_" + System.currentTimeMillis() + ".jpg";
+                }
+                
+                File tempFile = new File(context.getCacheDir(), fileName);
+                try (InputStream inputStream = context.getContentResolver().openInputStream(uri);
+                     FileOutputStream outputStream = new FileOutputStream(tempFile)) {
+                    if (inputStream == null) {
+                        return null;
+                    }
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, bytesRead);
+                    }
+                }
+                return tempFile;
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get file name from URI using MediaStore API
+     */
+    private String getFileNameFromUri(Uri uri) {
+        String fileName = null;
+        try {
+            // Method 1: Try OpenableColumns.DISPLAY_NAME (works for all content URIs)
+            Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+            if (cursor != null && cursor.moveToFirst()) {
+                int nameIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                if (nameIndex != -1) {
+                    fileName = cursor.getString(nameIndex);
+                }
+                cursor.close();
+            }
+        } catch (Exception e) {
+            // Fall through to alternative method
+        }
+
+        try {
+            // Method 2: Try MediaStore.MediaColumns.DISPLAY_NAME (works for media files)
+            if (fileName == null || fileName.isEmpty()) {
+                Cursor cursor = context.getContentResolver().query(
+                        uri,
+                        new String[] { MediaStore.MediaColumns.DISPLAY_NAME },
+                        null,
+                        null,
+                        null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    int nameIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+                    if (nameIndex != -1) {
+                        fileName = cursor.getString(nameIndex);
+                    }
+                    cursor.close();
+                }
+            }
+        } catch (Exception e) {
+            // Ignore
+        }
+
+        return fileName;
     }
 
     /**
