@@ -551,44 +551,40 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
     }
 
     private void handleLogout() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
-        builder.setTitle("Logout");
-        builder.setMessage("Are you sure you want to logout?");
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+        Dialog dialog = new Dialog(requireContext(), R.style.DialogTheme);
+        dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_logout);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
 
-        builder.setPositiveButton("Logout", (dialog, which) -> {
-            hapticHelper.vibrateClick();
-            performLogout();
-        });
+        android.view.Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.setDimAmount(0.5f);
+        }
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
-            hapticHelper.vibrateClick();
-            dialog.dismiss();
-        });
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnLogout = dialog.findViewById(R.id.btnLogout);
 
-        AlertDialog dialog = builder.create();
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+            });
+        }
+
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+                performLogout();
+            });
+        }
+
         dialog.show();
-
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        if (positiveButton != null) {
-            if (positiveButton instanceof MaterialButton) {
-                ((MaterialButton) positiveButton).setBackgroundTintList(
-                        android.content.res.ColorStateList.valueOf(
-                                getResources().getColor(R.color.error, null)
-                        )
-                );
-            } else {
-                positiveButton.setBackgroundColor(getResources().getColor(R.color.error, null));
-            }
-            positiveButton.setTextColor(getResources().getColor(R.color.on_primary, null));
-            positiveButton.setAllCaps(false);
-        }
-
-        Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-        if (negativeButton != null) {
-            negativeButton.setTextColor(getResources().getColor(R.color.text_secondary, null));
-            negativeButton.setAllCaps(false);
-        }
     }
 
     private void performLogout() {

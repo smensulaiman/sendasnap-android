@@ -30,12 +30,14 @@
             <item
                 android:id="@+id/action_about"
                 android:title="About"
-                android:icon="@drawable/ic_info" />
+                android:icon="@drawable/ic_info"
+                app:iconTint="@color/text_primary" />
             
             <item
                 android:id="@+id/action_logout"
                 android:title="Logout"
-                android:icon="@drawable/ic_logout" />
+                android:icon="@drawable/ic_logout"
+                app:iconTint="@color/text_primary" />
         </menu>
         
     </item>

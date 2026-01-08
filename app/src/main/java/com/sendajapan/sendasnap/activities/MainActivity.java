@@ -3,16 +3,17 @@ package com.sendajapan.sendasnap.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.Settings;
+import android.app.Dialog;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,7 +21,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isNetworkToastShowing = false;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
-    
+
     private MenuItem notificationsMenuItem;
     private TextView badgeTextView;
     private ValueEventListener unreadCountListener;
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         if (!(currentFragment instanceof HomeFragment)) {
             getMenuInflater().inflate(R.menu.toolbar_menu, menu);
             setupNotificationIcon(menu);
-            
+
             if (currentFragment instanceof ScheduleFragment || currentFragment instanceof ProfileFragment) {
                 MenuItem chatMenuItem = menu.findItem(R.id.action_chat);
                 if (chatMenuItem != null) {
@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
                 hapticHelper.vibrateClick();
                 openNotifications();
             });
-            
+
             new Handler(Looper.getMainLooper()).postDelayed(this::setupNotificationBadge, 300);
         }
     }
@@ -154,12 +154,12 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, NotificationsActivity.class);
         startActivity(intent);
     }
-    
+
     private void setupNotificationBadge() {
         if (!SharedPrefsManager.getInstance(this).isLoggedIn()) {
             return;
         }
-        
+
         // Get initial count
         NotificationHelper.getUnreadNotificationCount(this, new NotificationHelper.UnreadCountCallback() {
             @Override
@@ -172,21 +172,22 @@ public class MainActivity extends AppCompatActivity {
                 // Silently fail
             }
         });
-        
-        // Setup real-time listener
-        unreadCountListener = NotificationHelper.addUnreadCountListener(this, new NotificationHelper.UnreadCountCallback() {
-            @Override
-            public void onSuccess(int unreadCount) {
-                updateNotificationBadge(unreadCount);
-            }
 
-            @Override
-            public void onFailure(Exception e) {
-                // Silently fail
-            }
-        });
+        // Setup real-time listener
+        unreadCountListener = NotificationHelper.addUnreadCountListener(this,
+                new NotificationHelper.UnreadCountCallback() {
+                    @Override
+                    public void onSuccess(int unreadCount) {
+                        updateNotificationBadge(unreadCount);
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        // Silently fail
+                    }
+                });
     }
-    
+
     private void updateNotificationBadge(int unreadCount) {
         runOnUiThread(() -> {
             if (badgeTextView == null && notificationsMenuItem != null) {
@@ -211,48 +212,81 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void handleLogout() {
-        AlertDialog dialog = getDialog();
+        showLogoutDialog();
+    }
 
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        if (positiveButton != null) {
-            if (positiveButton instanceof MaterialButton) {
-                positiveButton.setBackgroundTintList(
-                        ColorStateList.valueOf(
-                                getResources().getColor(R.color.error, null)
-                        )
-                );
-            } else {
-                positiveButton.setBackgroundColor(getResources().getColor(R.color.error, null));
-            }
-            positiveButton.setTextColor(getResources().getColor(R.color.on_primary, null));
-            positiveButton.setAllCaps(false);
+    public void showLogoutDialog() {
+        Dialog dialog = new Dialog(this, R.style.DialogTheme);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_logout);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.setDimAmount(0.5f);
         }
 
-        Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-        if (negativeButton != null) {
-            negativeButton.setTextColor(getResources().getColor(R.color.text_secondary, null));
-            negativeButton.setAllCaps(false);
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnLogout = dialog.findViewById(R.id.btnLogout);
+
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+            });
         }
+
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+                performLogout();
+            });
+        }
+
+        dialog.show();
     }
 
     @NonNull
-    private AlertDialog getDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setTitle("Logout");
-        builder.setMessage("Are you sure you want to logout?");
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+    private Dialog getDialog() {
+        Dialog dialog = new Dialog(this, R.style.DialogTheme);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_logout);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
 
-        builder.setPositiveButton("Logout", (dialog, which) -> {
-            hapticHelper.vibrateClick();
-            performLogout();
-        });
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.setDimAmount(0.5f);
+        }
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
-            hapticHelper.vibrateClick();
-            dialog.dismiss();
-        });
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnLogout = dialog.findViewById(R.id.btnLogout);
 
-        AlertDialog dialog = builder.create();
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+            });
+        }
+
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+                performLogout();
+            });
+        }
+
         dialog.show();
         return dialog;
     }
@@ -261,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
         FcmNotificationSender.removeNotificationListener();
         ChatMessageListener.removeChatMessageListener();
         ChatMessageListener.clearProcessedTimestamps();
-        
+
         SharedPrefsManager prefsManager = SharedPrefsManager.getInstance(this);
         prefsManager.logout();
 
@@ -284,14 +318,15 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Check and request notification permission
      * For Android 13+ (API 33+): Requires POST_NOTIFICATIONS permission
-     * For Android 11 (API 30): Checks if notifications are enabled in system settings
+     * For Android 11 (API 30): Checks if notifications are enabled in system
+     * settings
      */
     private void checkAndRequestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // Android 13+ requires POST_NOTIFICATIONS permission
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                    != PackageManager.PERMISSION_GRANTED) {
-                
+            if (ContextCompat.checkSelfPermission(this,
+                    Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+
                 // Check if we should show rationale
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS)) {
                     // Show explanation dialog
@@ -300,9 +335,8 @@ public class MainActivity extends AppCompatActivity {
                     // Request permission directly
                     ActivityCompat.requestPermissions(
                             this,
-                            new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                            NOTIFICATION_PERMISSION_REQUEST_CODE
-                    );
+                            new String[] { Manifest.permission.POST_NOTIFICATIONS },
+                            NOTIFICATION_PERMISSION_REQUEST_CODE);
                 }
             } else {
                 // Permission granted, check if notifications are enabled in system settings
@@ -326,9 +360,8 @@ public class MainActivity extends AppCompatActivity {
                 .setPositiveButton("Allow", (dialog, which) -> {
                     ActivityCompat.requestPermissions(
                             MainActivity.this,
-                            new String[]{Manifest.permission.POST_NOTIFICATIONS},
-                            NOTIFICATION_PERMISSION_REQUEST_CODE
-                    );
+                            new String[] { Manifest.permission.POST_NOTIFICATIONS },
+                            NOTIFICATION_PERMISSION_REQUEST_CODE);
                 })
                 .setNegativeButton("Cancel", (dialog, which) -> {
                     dialog.dismiss();
@@ -337,8 +370,7 @@ public class MainActivity extends AppCompatActivity {
                             this,
                             "Notifications Disabled",
                             "You can enable notifications later in app settings",
-                            CookieBarToastHelper.SHORT_DURATION
-                    );
+                            CookieBarToastHelper.SHORT_DURATION);
                 })
                 .setCancelable(false)
                 .show();
@@ -362,7 +394,8 @@ public class MainActivity extends AppCompatActivity {
     private void showNotificationSettingsDialog() {
         new MaterialAlertDialogBuilder(this)
                 .setTitle("Enable Notifications")
-                .setMessage("Notifications are currently disabled. Please enable them in system settings to receive task assignment notifications.")
+                .setMessage(
+                        "Notifications are currently disabled. Please enable them in system settings to receive task assignment notifications.")
                 .setPositiveButton("Open Settings", (dialog, which) -> {
                     openNotificationSettings();
                 })
@@ -384,9 +417,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        
+
         if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, check system notification settings
@@ -395,8 +429,7 @@ public class MainActivity extends AppCompatActivity {
                         this,
                         "Permission Granted",
                         "You will now receive task assignment notifications",
-                        CookieBarToastHelper.SHORT_DURATION
-                );
+                        CookieBarToastHelper.SHORT_DURATION);
             } else {
                 // Permission denied
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS)) {
@@ -405,8 +438,7 @@ public class MainActivity extends AppCompatActivity {
                             this,
                             "Permission Denied",
                             "Notifications are disabled. You can enable them in app settings",
-                            CookieBarToastHelper.LONG_DURATION
-                    );
+                            CookieBarToastHelper.LONG_DURATION);
                 } else {
                     // User denied and selected "Don't ask again"
                     showNotificationSettingsDialog();
@@ -528,63 +560,56 @@ public class MainActivity extends AppCompatActivity {
 
     private void showExitConfirmationDialog() {
         hapticHelper.vibrateClick();
-
-        AlertDialog dialog = getAlertDialog();
-
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        if (positiveButton != null) {
-            if (positiveButton instanceof MaterialButton) {
-                positiveButton.setBackgroundTintList(
-                        ColorStateList.valueOf(
-                                getResources().getColor(R.color.red_700, null)
-                        )
-                );
-            } else {
-                positiveButton.setBackgroundColor(getResources().getColor(R.color.red_700, null));
-            }
-            positiveButton.setTextColor(getResources().getColor(R.color.on_primary, null));
-            positiveButton.setAllCaps(false);
-        }
-
-        Button negativeButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE);
-        if (negativeButton != null) {
-            negativeButton.setTextColor(getResources().getColor(R.color.text_secondary, null));
-            negativeButton.setAllCaps(false);
-        }
+        getExitDialog();
     }
 
-    @NonNull
-    private AlertDialog getAlertDialog() {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this);
-        builder.setTitle("Exit App?");
-        builder.setMessage("Are you sure you want to exit Senda Snap?");
-        builder.setIcon(android.R.drawable.ic_dialog_alert);
+    private void getExitDialog() {
+        Dialog dialog = new Dialog(this, R.style.DialogTheme);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_exit);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
 
-        builder.setPositiveButton("Exit", (dialog, which) -> {
-            hapticHelper.vibrateClick();
-            finishAffinity();
-        });
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.setDimAmount(0.5f);
+        }
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> {
-            hapticHelper.vibrateClick();
-            dialog.dismiss();
-        });
+        MaterialButton btnCancel = dialog.findViewById(R.id.btnCancel);
+        MaterialButton btnExit = dialog.findViewById(R.id.btnExit);
 
-        AlertDialog dialog = builder.create();
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+            });
+        }
+
+        if (btnExit != null) {
+            btnExit.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+                finishAffinity();
+            });
+        }
+
         dialog.show();
-        return dialog;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        
+
         // Remove notification listener
         if (unreadCountListener != null) {
             NotificationHelper.removeUnreadCountListener(this, unreadCountListener);
             unreadCountListener = null;
         }
-        
+
         if (networkUtils != null) {
             networkUtils.stopNetworkCallback();
         }
