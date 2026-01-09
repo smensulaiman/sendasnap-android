@@ -460,13 +460,11 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
         } else if (itemId == R.id.action_chat) {
             openChat();
             return true;
-        } else if (itemId == R.id.action_about) {
-            openAbout();
-            return true;
         } else if (itemId == R.id.action_logout) {
             handleLogout();
             return true;
         }
+        // Let MainActivity handle action_about
         return super.onOptionsItemSelected(item);
     }
 
@@ -544,10 +542,6 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
                 }
             }
         });
-    }
-
-    private void openAbout() {
-        Toast.makeText(requireContext(), "About coming soon", Toast.LENGTH_SHORT).show();
     }
 
     private void handleLogout() {

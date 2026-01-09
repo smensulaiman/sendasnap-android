@@ -11,7 +11,7 @@ android {
         applicationId "com.sendajapan.sendasnap"
         minSdk 29
         targetSdk 36
-        versionCode 4
+        versionCode 3
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -130,6 +130,7 @@ dependencies {
     implementation libs.lottie
     implementation libs.cookiebar2
     implementation libs.shimmer
+    implementation libs.play.core
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

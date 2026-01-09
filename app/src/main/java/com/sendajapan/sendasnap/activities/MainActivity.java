@@ -2,7 +2,9 @@ package com.sendajapan.sendasnap.activities;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,6 +44,7 @@ import com.sendajapan.sendasnap.fragments.ScheduleFragment;
 import com.sendajapan.sendasnap.networking.NetworkUtils;
 import com.google.firebase.database.ValueEventListener;
 import com.sendajapan.sendasnap.activities.auth.LoginActivity;
+import com.sendajapan.sendasnap.utils.AppUpdateManager;
 import com.sendajapan.sendasnap.utils.ChatMessageListener;
 import com.sendajapan.sendasnap.utils.CookieBarToastHelper;
 import com.sendajapan.sendasnap.utils.DrawerController;
@@ -57,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private HapticFeedbackHelper hapticHelper;
     private NetworkUtils networkUtils;
+    private AppUpdateManager appUpdateManager;
 
     private boolean isNetworkToastShowing = false;
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 1001;
@@ -87,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
         setupNetworkMonitoring();
         setupBackPressHandler();
         checkAndRequestNotificationPermission();
+        setupAppUpdate();
 
         if (savedInstanceState == null) {
             loadFragment(new HomeFragment());
@@ -307,12 +312,249 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openAbout() {
-        Toast.makeText(this, "coming soon", Toast.LENGTH_SHORT).show();
+        hapticHelper.vibrateClick();
+        showAboutDialog();
+    }
+
+    private void showAboutDialog() {
+        Dialog dialog = new Dialog(this, R.style.DialogTheme);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_about);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.setDimAmount(0.5f);
+        }
+
+        // Get app version info
+        String appName = "Senda Snap";
+        String versionName = "1.0";
+        try {
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            versionName = packageInfo.versionName;
+            String packageName = getPackageName();
+            // You can also get app name from PackageManager if needed
+        } catch (PackageManager.NameNotFoundException e) {
+            // Use defaults
+        }
+
+        TextView txtAppName = dialog.findViewById(R.id.txtAppName);
+        TextView txtAppVersion = dialog.findViewById(R.id.txtAppVersion);
+        TextView txtPlayStoreLink = dialog.findViewById(R.id.txtPlayStoreLink);
+        MaterialButton btnCheckUpdate = dialog.findViewById(R.id.btnCheckUpdate);
+        MaterialButton btnClose = dialog.findViewById(R.id.btnClose);
+
+        if (txtAppName != null) {
+            txtAppName.setText(appName);
+        }
+
+        if (txtAppVersion != null) {
+            txtAppVersion.setText("Version " + versionName);
+        }
+
+        if (txtPlayStoreLink != null) {
+            txtPlayStoreLink.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                openPlayStore();
+                dialog.dismiss();
+            });
+        }
+
+        if (btnCheckUpdate != null) {
+            btnCheckUpdate.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                checkForUpdate(dialog);
+            });
+        }
+
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
+    }
+
+    private void openPlayStore() {
+        try {
+            String packageName = getPackageName();
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
+            intent.setPackage("com.android.vending");
+            startActivity(intent);
+        } catch (Exception e) {
+            // If Play Store app is not available, open in browser
+            try {
+                String packageName = getPackageName();
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
+                startActivity(intent);
+            } catch (Exception ex) {
+                CookieBarToastHelper.showError(
+                        this,
+                        "Error",
+                        "Unable to open Play Store",
+                        CookieBarToastHelper.SHORT_DURATION);
+            }
+        }
+    }
+
+    private void checkForUpdate(Dialog aboutDialog) {
+        if (appUpdateManager == null) {
+            CookieBarToastHelper.showError(
+                    this,
+                    "Error",
+                    "Update service not available",
+                    CookieBarToastHelper.SHORT_DURATION);
+            return;
+        }
+
+        // Show loading state
+        MaterialButton btnCheckUpdate = aboutDialog.findViewById(R.id.btnCheckUpdate);
+        if (btnCheckUpdate != null) {
+            btnCheckUpdate.setEnabled(false);
+            btnCheckUpdate.setText("Checking...");
+        }
+
+        // Check for update
+        appUpdateManager.checkForUpdateWithCallback(new AppUpdateManager.UpdateCheckCallback() {
+            @Override
+            public void onUpdateAvailable() {
+                runOnUiThread(() -> {
+                    if (btnCheckUpdate != null) {
+                        btnCheckUpdate.setEnabled(true);
+                        btnCheckUpdate.setText("Check for Update");
+                    }
+                    aboutDialog.dismiss();
+                    showUpdateAvailableDialog();
+                });
+            }
+
+            @Override
+            public void onNoUpdateAvailable() {
+                runOnUiThread(() -> {
+                    if (btnCheckUpdate != null) {
+                        btnCheckUpdate.setEnabled(true);
+                        btnCheckUpdate.setText("Check for Update");
+                    }
+                    CookieBarToastHelper.showSuccess(
+                            MainActivity.this,
+                            "Up to Date",
+                            "You are using the latest version",
+                            CookieBarToastHelper.SHORT_DURATION);
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                runOnUiThread(() -> {
+                    if (btnCheckUpdate != null) {
+                        btnCheckUpdate.setEnabled(true);
+                        btnCheckUpdate.setText("Check for Update");
+                    }
+                    CookieBarToastHelper.showError(
+                            MainActivity.this,
+                            "Update Check Failed",
+                            "Please try again later",
+                            CookieBarToastHelper.SHORT_DURATION);
+                });
+            }
+
+            @Override
+            public void onAppNotOwned() {
+                runOnUiThread(() -> {
+                    if (btnCheckUpdate != null) {
+                        btnCheckUpdate.setEnabled(true);
+                        btnCheckUpdate.setText("Check for Update");
+                    }
+                    CookieBarToastHelper.showInfo(
+                            MainActivity.this,
+                            "Update Check Unavailable",
+                            "In-app updates are only available for apps installed from Play Store. Please install the app from Play Store to check for updates.",
+                            CookieBarToastHelper.LONG_DURATION);
+                });
+            }
+        });
+    }
+
+    private void showUpdateAvailableDialog() {
+        Dialog dialog = new Dialog(this, R.style.DialogTheme);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_update_available);
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);
+
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+            window.setDimAmount(0.5f);
+        }
+
+        MaterialButton btnUpdate = dialog.findViewById(R.id.btnUpdate);
+        MaterialButton btnLater = dialog.findViewById(R.id.btnLater);
+
+        if (btnUpdate != null) {
+            btnUpdate.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+                // Start the update flow
+                if (appUpdateManager != null) {
+                    appUpdateManager.startUpdateFlow();
+                }
+            });
+        }
+
+        if (btnLater != null) {
+            btnLater.setOnClickListener(v -> {
+                hapticHelper.vibrateClick();
+                dialog.dismiss();
+            });
+        }
+
+        dialog.show();
     }
 
     private void initHelpers() {
         networkUtils = NetworkUtils.getInstance(this);
         hapticHelper = HapticFeedbackHelper.getInstance(this);
+        appUpdateManager = new AppUpdateManager(this);
+    }
+
+    /**
+     * Setup and check for app updates.
+     * Checks for updates after a short delay to avoid interfering with app startup.
+     * Uses flexible update flow (non-blocking) by default.
+     * Set staleAllowedDays to 0 for immediate updates on critical versions.
+     */
+    private void setupAppUpdate() {
+        // Check for updates after a short delay to not interfere with app startup
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (appUpdateManager != null) {
+                // Check for updates with flexible flow (non-blocking)
+                // Set staleAllowedDays to 0 if you want immediate updates for critical versions
+                appUpdateManager.checkForAppUpdate(7); // Allow 7 days before forcing immediate update
+            }
+        }, 2000); // 2 second delay
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check if an update is in progress when user returns to app
+        if (appUpdateManager != null) {
+            appUpdateManager.checkForUpdateInProgress();
+        }
     }
 
     /**
