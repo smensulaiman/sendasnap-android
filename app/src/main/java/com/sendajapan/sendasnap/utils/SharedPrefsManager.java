@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.sendajapan.sendasnap.models.UserData;
+import com.sendajapan.sendasnap.models.Vendor;
 import com.sendajapan.sendasnap.models.Vehicle;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class SharedPrefsManager {
     private static final String KEY_SAVED_PASSWORD = "saved_password";
     private static final String KEY_REMEMBER_ME = "remember_me";
     private static final String KEY_TOKEN = "auth_token";
+    private static final String KEY_VENDOR = "vendor";
 
     private static SharedPrefsManager instance;
     private final SharedPreferences sharedPreferences;
@@ -72,7 +74,29 @@ public class SharedPrefsManager {
                 .remove(KEY_USERNAME)
                 .remove(KEY_EMAIL)
                 .remove(KEY_TOKEN)
+                .remove(KEY_VENDOR)
                 .apply();
+    }
+
+    public void saveVendor(Vendor vendor) {
+        if (vendor != null) {
+            String vendorJson = gson.toJson(vendor);
+            sharedPreferences.edit()
+                    .putString(KEY_VENDOR, vendorJson)
+                    .apply();
+        } else {
+            sharedPreferences.edit()
+                    .remove(KEY_VENDOR)
+                    .apply();
+        }
+    }
+
+    public Vendor getVendor() {
+        String vendorJson = sharedPreferences.getString(KEY_VENDOR, null);
+        if (vendorJson != null) {
+            return gson.fromJson(vendorJson, Vendor.class);
+        }
+        return null;
     }
 
     public String getUsername() {
@@ -190,5 +214,18 @@ public class SharedPrefsManager {
         sharedPreferences.edit()
                 .remove(KEY_TOKEN)
                 .apply();
+    }
+
+    // Generic string preference methods
+    public void putString(String key, String value) {
+        sharedPreferences.edit().putString(key, value).apply();
+    }
+
+    public String getString(String key, String defaultValue) {
+        return sharedPreferences.getString(key, defaultValue);
+    }
+
+    public void remove(String key) {
+        sharedPreferences.edit().remove(key).apply();
     }
 }

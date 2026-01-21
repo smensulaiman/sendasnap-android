@@ -5,25 +5,27 @@ This document defines the design standards, UI patterns, and visual architecture
 
 ## Page Structure
 
-### Standard Activity Layout
-Every new activity page should follow this structure:
+### Standard Activity Layout (ConstraintLayout with Gradients)
+Every new activity page should follow this structure with gradient backgrounds:
 
 ```xml
-<LinearLayout or CoordinatorLayout
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/color_background"
     android:elevation="12dp"
     android:fitsSystemWindows="true">
 
     <!-- App Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        app:elevation="4dp">
+        app:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -38,19 +40,40 @@ Every new activity page should follow this structure:
 
     </com.google.android.material.appbar.AppBarLayout>
 
+    <!-- Blue radial gradient at bottom-left corner -->
+    <View
+        android:id="@+id/viewDiagonalGradient"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="0dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:background="@drawable/gradient_radial_blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="-200dp"
+        android:layout_marginEnd="-200dp"/>
+
     <!-- Content -->
     <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
+        android:id="@+id/nestedScrollView"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:elevation="1dp"
+        android:background="@android:color/transparent"
         android:fillViewport="true"
         android:scrollbars="none"
-        android:overScrollMode="never">
+        android:overScrollMode="never"
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:background="@drawable/gradient_radial_fog_white"
             android:paddingHorizontal="@dimen/dimen_16"
             android:paddingBottom="32dp">
 
@@ -60,11 +83,16 @@ Every new activity page should follow this structure:
 
     </androidx.core.widget.NestedScrollView>
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
 ```
 
+### Gradient Background System
+All activity pages use a dual-gradient system:
+- **Blue Radial Gradient** (`@drawable/gradient_radial_blue`): Positioned at bottom-left corner, creates accent effect
+- **White Fog Gradient** (`@drawable/gradient_radial_fog_white`): Applied to content container, creates subtle overlay effect
+
 ### Alternative: CoordinatorLayout with Gradient Background
-For pages with gradient backgrounds (like Vehicle Details):
+For pages with CoordinatorLayout (like History):
 
 ```xml
 <androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -72,7 +100,7 @@ For pages with gradient backgrounds (like Vehicle Details):
     android:layout_height="match_parent"
     android:elevation="12dp"
     android:fitsSystemWindows="true"
-    android:background="@drawable/professional_gradient">
+    android:background="@color/white">
 
     <!-- App Bar (same as above) -->
 
@@ -82,7 +110,17 @@ For pages with gradient backgrounds (like Vehicle Details):
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <!-- Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/gradient_radial_fog_white"
+            android:paddingHorizontal="@dimen/dimen_16"
+            android:paddingBottom="32dp">
+
+            <!-- Content -->
+
+        </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
@@ -174,9 +212,11 @@ Use these dimension resources from `dimens.xml`:
 - **Muted Text**: `@color/text_muted` - Very secondary information
 
 ### Background Colors
-- **Page Background**: `@color/color_background` (#FDFDFD)
+- **Page Background**: `@color/white` (#FDFDFD)
 - **Card Background**: `@color/white` or `@color/primary_light`
-- **Gradient Background**: `@drawable/professional_gradient`
+- **Gradient Backgrounds**:
+  - **Blue Radial Gradient**: `@drawable/gradient_radial_blue` - Bottom-left accent
+  - **White Fog Gradient**: `@drawable/gradient_radial_fog_white` - Content overlay
 
 ### Status Colors
 - **Success**: `@color/success` with `@color/success_light` background
@@ -234,6 +274,56 @@ Use these dimension resources from `dimens.xml`:
 - **With Border**: Add `app:strokeColor` and `app:strokeWidth="1dp"`
 - **Status Cards**: Use status colors (success_light, error_light, warning_light)
 
+### Shipment Schedule List Card (`item_schedule_card.xml`)
+
+Shipment schedule items use a more structured, timeline-like card:
+
+```xml
+<com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="140dp"
+    android:layout_marginBottom="@dimen/dimen_8"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/primary"
+    app:strokeWidth="2dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/dimen_16">
+
+        <!-- Top: vessel name + chevron -->
+        <!-- Second line: compact voyage number -->
+        <!-- Middle: vertical route column (start/end circles) with ports aligned on the right -->
+        <!-- Bottom: created-at text -->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
+```
+
+Key layout rules:
+- **Height**: fixed `140dp` for consistent list appearance.
+- **Background**: `@color/white` with `app:strokeColor="@color/primary"` and `strokeWidth="2dp"` for a clean bordered card.
+- **Title row**:
+  - `txtVesselName`: bold, `@dimen/text_size_medium`, `@color/primary`, single line, ellipsized.
+  - Right-aligned `imgRightArrow` (`ic_chevron_right`) vertically aligned with the port section.
+- **Sub-title row**:
+  - `txtVoyageNo`: uses `@dimen/text_size_xsmall` and `@font/montserrat_regular` to keep it subtle.
+- **Route section**:
+  - Left column: two circular markers (`route_circle`) for departure and arrival, tinted green and red.
+  - Between circles: a thin vertical connector line (currently solid `@color/zinc_600` for reliability across devices).
+  - Right column: `txtStartPort` and `txtEndPort` aligned vertically with their respective circles. Each is:
+    - `@font/montserrat_semi_bold`
+    - `@dimen/text_size_small`
+    - `maxLines="2"` with `ellipsize="end"`.
+  - Optional horizontal separator (`horizontalSeparator`) can be used between `txtStartPort` and `txtEndPort` when a clearer division is needed.
+- **Footer**:
+  - `txtCreatedAt` pinned to the bottom of the card, using `@dimen/text_size_xsmall` and `@color/text_secondary` (e.g. `"Created: Feb 15, 2024"`).
+
 ## Form Input Design
 
 ### TextInputLayout Configuration
@@ -264,6 +354,74 @@ Use these dimension resources from `dimens.xml`:
 - **Top Margin**: `@dimen/dimen_4` or `@dimen/dimen_8` between inputs
 - **Section Margin**: `@dimen/dimen_16` between input sections
 
+### Date and Time Inputs (Side-by-Side)
+For date and time selection, place them side-by-side:
+
+```xml
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:weightSum="2">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="Select Date"
+        android:layout_marginEnd="@dimen/dimen_16"
+        app:boxStrokeColor="@color/primary"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="@color/text_secondary"
+        app:startIconDrawable="@drawable/ic_calendar_outlined"
+        app:startIconTint="@color/black"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="false"
+            android:inputType="date"
+            android:textSize="@dimen/text_size_small"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:textColor="@color/text_black"
+            android:padding="16dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:hint="Select Time"
+        app:boxStrokeColor="@color/primary"
+        app:boxStrokeWidthFocused="2dp"
+        app:hintTextColor="@color/text_secondary"
+        app:startIconDrawable="@drawable/ic_time"
+        app:startIconTint="@color/black"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/editTextTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:focusable="false"
+            android:inputType="time"
+            android:textSize="@dimen/text_size_small"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:textColor="@color/text_black"
+            android:padding="16dp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>
+```
+
+### Description Field Height
+- **Standard Description Field**: `120dp` height for multi-line text input
+
 ## Chip Design
 
 ### Standard Chip Configuration
@@ -292,6 +450,23 @@ Use these dimension resources from `dimens.xml`:
     app:chipSpacingVertical="8dp"
     app:singleSelection="true">
 ```
+
+### Task Status and Priority Chips
+For task status and priority selection, use consistent color schemes:
+
+**Status Chips:**
+- **Pending**: `chipBackgroundColor="@color/white"`, `chipStrokeColor="@color/warning_dark"`
+- **In Progress**: `chipBackgroundColor="@color/primary_light"`, `chipStrokeColor="@color/primary"`
+- **Completed**: `chipBackgroundColor="@color/success_light"`, `chipStrokeColor="@color/success_dark"`
+- **Cancelled**: `chipBackgroundColor="@color/error_light"`, `chipStrokeColor="@color/error_dark"`
+
+**Priority Chips:**
+- **Low**: `chipBackgroundColor="@color/white"`, `chipStrokeColor="@color/warning_dark"`
+- **Normal**: `chipBackgroundColor="@color/primary_light"`, `chipStrokeColor="@color/primary"`
+- **High**: `chipBackgroundColor="@color/error_light"`, `chipStrokeColor="@color/error_dark"`
+
+**Container Background:**
+- Both status and priority sections use: `backgroundTint="@color/primary_light"`
 
 ## Button Design
 
@@ -348,6 +523,109 @@ Use these dimension resources from `dimens.xml`:
     android:textStyle="bold"
     android:fontFamily="@font/montserrat_semi_bold"/>
 ```
+
+## Badge Design
+
+### Status and Priority Badges (Side-by-Side, Top Right)
+For detail pages, display status and priority badges side-by-side at the top-right:
+
+```xml
+<!-- Status and Priority Badges - Top Right -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginTop="@dimen/dimen_16"
+    android:gravity="end"
+    android:layout_marginBottom="@dimen/dimen_8">
+
+    <LinearLayout
+        android:id="@+id/layoutStatusBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/badge_4"
+        android:padding="@dimen/dimen_8"
+        android:backgroundTint="@color/primary_light"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="@dimen/dimen_8">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_small"
+            android:paddingHorizontal="@dimen/dimen_8"
+            android:paddingVertical="4dp"
+            android:layout_marginEnd="@dimen/dimen_8"/>
+
+        <ImageView
+            android:id="@+id/imgStatusIcon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="4dp"
+            app:tint="@color/white" />
+
+        <TextView
+            android:id="@+id/textStatusValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_small"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/layoutPriorityBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/badge_4"
+        android:padding="@dimen/dimen_8"
+        android:backgroundTint="@color/primary_light"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Priority"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_small"
+            android:paddingHorizontal="@dimen/dimen_8"
+            android:paddingVertical="4dp"
+            android:layout_marginEnd="@dimen/dimen_8"/>
+
+        <ImageView
+            android:id="@+id/imgPriorityIcon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="4dp"
+            app:tint="@color/white"/>
+
+        <TextView
+            android:id="@+id/textPriorityValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_small"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+```
+
+### Badge Specifications
+- **Container**: `@drawable/badge_4` background with `@color/primary_light` tint
+- **Padding**: `@dimen/dimen_8` (8dp)
+- **Label**: White text, `@dimen/text_size_small`, padding `8dp` horizontal, `4dp` vertical
+- **Icon**: `16dp x 16dp`, white tint
+- **Value**: White text, `@dimen/text_size_small`
+- **Spacing**: `@dimen/dimen_8` margin between badges
 
 ## Data Display Patterns
 
@@ -474,14 +752,18 @@ private void setupToolbar() {
 
 When creating a new page, ensure:
 - [ ] Toolbar follows standard configuration
+- [ ] ConstraintLayout root with gradient backgrounds (blue radial + white fog)
 - [ ] Text sizes use dimension resources
 - [ ] Margins and padding use dimension resources
 - [ ] Colors use color resources (no hardcoded colors)
 - [ ] Font families are consistent
 - [ ] Cards use standard MaterialCardView configuration
 - [ ] Form inputs use TextInputLayout with proper styling
+- [ ] Date/Time inputs are side-by-side when used together
+- [ ] Description fields use 120dp height
 - [ ] Buttons follow standard button patterns
 - [ ] Section headers are consistent
+- [ ] Status/Priority badges are side-by-side at top-right (for detail pages)
 - [ ] Spacing is consistent throughout
 - [ ] Background colors match design system
 - [ ] Empty states are included where needed
@@ -552,16 +834,34 @@ When creating a new page, ensure:
 - Card spacing of 16dp
 
 ### Schedule Detail Pattern
-- LinearLayout with standard background
+- ConstraintLayout root with gradient backgrounds
+- Status and Priority badges side-by-side at top-right
 - MaterialCardView for each section
 - 12dp card corner radius
 - 16dp horizontal padding
 - Vertical spacing of 16dp between cards
+- Date/Time fields side-by-side
+- Description field height: 120dp
 
-### Add Schedule Pattern
+#### Shipment Schedule Detail (Gradients + Layout)
+- **Background gradients**: Follow the same pattern as `activity_create_stopover.xml`:
+  - Root uses **ConstraintLayout** with a bottom-left `View` using `@drawable/gradient_radial_blue` constrained to the parent bottom/start, with negative bottom/end margins to push the accent off-screen.
+  - The main scrollable content is a `NestedScrollView` constrained between the `AppBarLayout` and the bottom of the parent, with its inner `LinearLayout` using `@drawable/gradient_radial_fog_white` as background and standard `16dp` horizontal / `32dp` bottom padding.
+- **Basic Information card layout**:
+  - Vessel name and voyage no are displayed in a single horizontal row using a `LinearLayout` with `weightSum="2"`.
+  - Each column is a vertical `LinearLayout` (label + value) with `layout_width="0dp"` and `layout_weight="1"` to keep both fields aligned and reduce height.
+- **Metadata card layout**:
+  - "Added By" and "Created At" are shown side-by-side in one horizontal row with `weightSum="2"` and two vertical columns (label + value) using `layout_width="0dp"` and `layout_weight="1"`.
+  - "Updated At" remains a full-width vertical key-value block below for clarity while keeping overall card height compact.
+
+### Add Schedule/Task Pattern
+- ConstraintLayout root with gradient backgrounds
 - NestedScrollView for scrollable content
 - TextInputLayout for form inputs
-- Chip groups for selections
-- Action buttons at bottom
+- Date/Time inputs side-by-side in LinearLayout with weightSum="2"
+- Chip groups for status/priority selections
+- Status and Priority sections use `@color/primary_light` background
+- Action buttons at bottom with marginTop
 - 32dp bottom padding for scrollable content
+- Description field height: 120dp
 

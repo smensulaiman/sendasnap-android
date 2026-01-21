@@ -10,33 +10,32 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.sendajapan.sendasnap.R;
 import com.sendajapan.sendasnap.activities.NotificationsActivity;
 import com.sendajapan.sendasnap.activities.VehicleDetailsActivity;
 import com.sendajapan.sendasnap.activities.auth.LoginActivity;
+import com.sendajapan.sendasnap.activities.shipment.ScheduleListActivity;
 import com.sendajapan.sendasnap.adapters.VehicleAdapter;
 import com.sendajapan.sendasnap.databinding.FragmentHomeBinding;
 import com.sendajapan.sendasnap.dialogs.LoadingDialog;
 import com.sendajapan.sendasnap.dialogs.VehicleSearchDialog;
 import com.sendajapan.sendasnap.models.ErrorResponse;
 import com.sendajapan.sendasnap.models.UserData;
+import com.sendajapan.sendasnap.models.Vendor;
 import com.sendajapan.sendasnap.models.Vehicle;
 import com.sendajapan.sendasnap.models.VehicleSearchResponse;
 import com.sendajapan.sendasnap.networking.ApiService;
@@ -122,7 +121,8 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
 
         binding.btnViewStats.setOnClickListener(v -> {
             hapticHelper.vibrateClick();
-            Toast.makeText(getContext(), "Stats feature coming soon!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(requireContext(), ScheduleListActivity.class);
+            startActivity(intent);
         });
     }
 
@@ -136,6 +136,7 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
     private void loadUserProfile() {
         SharedPrefsManager prefsManager = SharedPrefsManager.getInstance(requireContext());
         UserData currentUser = prefsManager.getUser();
+        Vendor vendor = prefsManager.getVendor();
 
         if (currentUser != null) {
             if (binding.txtUserName != null) {
@@ -174,6 +175,72 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
                 }
             }
         }
+
+        if (vendor != null) {
+            if (binding.txtUserCompany != null) {
+                String companyName = vendor.getName();
+                if (companyName != null && !companyName.isEmpty()) {
+                    binding.txtUserCompany.setText(companyName);
+                    binding.txtUserCompany.setVisibility(View.VISIBLE);
+                } else {
+                    binding.txtUserCompany.setVisibility(View.GONE);
+                }
+            }
+
+            if (binding.txtCompanyAddress != null) {
+                String address = buildAddressString(vendor);
+                if (address != null && !address.isEmpty()) {
+                    binding.txtCompanyAddress.setText(address);
+                    binding.txtCompanyAddress.setVisibility(View.VISIBLE);
+                } else {
+                    binding.txtCompanyAddress.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            if (binding.txtUserCompany != null) {
+                binding.txtUserCompany.setVisibility(View.GONE);
+            }
+            if (binding.txtCompanyAddress != null) {
+                binding.txtCompanyAddress.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private String buildAddressString(Vendor vendor) {
+        if (vendor == null) {
+            return null;
+        }
+
+        StringBuilder addressBuilder = new StringBuilder();
+        if (vendor.getAddress() != null && !vendor.getAddress().isEmpty()) {
+            addressBuilder.append(vendor.getAddress());
+        }
+        if (vendor.getCity() != null && !vendor.getCity().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(", ");
+            }
+            addressBuilder.append(vendor.getCity());
+        }
+        if (vendor.getState() != null && !vendor.getState().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(", ");
+            }
+            addressBuilder.append(vendor.getState());
+        }
+        if (vendor.getCountry() != null && !vendor.getCountry().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(", ");
+            }
+            addressBuilder.append(vendor.getCountry());
+        }
+        if (vendor.getZip() != null && !vendor.getZip().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(" ");
+            }
+            addressBuilder.append(vendor.getZip());
+        }
+
+        return addressBuilder.length() > 0 ? addressBuilder.toString() : null;
     }
 
     private boolean isValidUrl(String url) {
@@ -417,8 +484,6 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
 
     @Override
     public void onDestroyView() {
-        super.onDestroyView();
-
         if (unreadCountListener != null && getContext() != null) {
             NotificationHelper.removeUnreadCountListener(getContext(), unreadCountListener);
             unreadCountListener = null;
@@ -426,6 +491,7 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
 
         hideLoadingDialog();
         binding = null;
+        super.onDestroyView();
     }
 
     @Override

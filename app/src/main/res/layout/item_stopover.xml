@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/dimen_8"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/amber_50"
+    app:strokeColor="@color/border"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/dimen_12">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="@dimen/dimen_8"
+                android:src="@drawable/ic_location"
+                app:tint="@color/text_secondary"/>
+
+            <TextView
+                android:id="@+id/txtPortName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Port of Miami"
+                android:textColor="@color/text_black"
+                android:textSize="@dimen/text_size_small"
+                android:textStyle="bold"
+                android:fontFamily="@font/montserrat_semi_bold"
+                android:includeFontPadding="false"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dimen_4"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Arrival:"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_size_xsmall"
+                android:fontFamily="@font/montserrat_semi_bold"
+                android:includeFontPadding="false"/>
+
+            <TextView
+                android:id="@+id/txtArrival"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dimen_4"
+                android:text="February 10, 2024"
+                android:textColor="@color/text_black"
+                android:textSize="@dimen/text_size_xsmall"
+                android:fontFamily="@font/montserrat_semi_bold"
+                android:includeFontPadding="false"
+                android:visibility="gone"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Departure:"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_size_xsmall"
+                android:fontFamily="@font/montserrat_semi_bold"
+                android:includeFontPadding="false"/>
+
+            <TextView
+                android:id="@+id/txtDeparture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/dimen_4"
+                android:text="February 12, 2024"
+                android:textColor="@color/text_black"
+                android:textSize="@dimen/text_size_xsmall"
+                android:fontFamily="@font/montserrat_semi_bold"
+                android:includeFontPadding="false"
+                android:visibility="gone"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -15,6 +15,7 @@ import com.sendajapan.sendasnap.R;
 import com.sendajapan.sendasnap.activities.HistoryActivity;
 import com.sendajapan.sendasnap.databinding.FragmentProfileBinding;
 import com.sendajapan.sendasnap.models.UserData;
+import com.sendajapan.sendasnap.models.Vendor;
 import com.sendajapan.sendasnap.utils.HapticFeedbackHelper;
 import com.sendajapan.sendasnap.utils.SharedPrefsManager;
 
@@ -65,6 +66,7 @@ public class ProfileFragment extends Fragment {
 
     private void loadUserData() {
         UserData user = prefsManager.getUser();
+        Vendor vendor = prefsManager.getVendor();
 
         if (user != null) {
             String userName = user.getName();
@@ -128,8 +130,72 @@ public class ProfileFragment extends Fragment {
             binding.imgProfile.setImageResource(R.drawable.avater_placeholder);
         }
 
+        if (vendor != null) {
+            if (binding.txtCompanyName != null) {
+                String companyName = vendor.getName();
+                if (companyName != null && !companyName.isEmpty()) {
+                    binding.txtCompanyName.setText(companyName);
+                } else {
+                    binding.txtCompanyName.setText("N/A");
+                }
+            }
+
+            if (binding.txtCompanyAddress != null) {
+                String address = buildAddressString(vendor);
+                if (address != null && !address.isEmpty()) {
+                    binding.txtCompanyAddress.setText(address);
+                } else {
+                    binding.txtCompanyAddress.setText("N/A");
+                }
+            }
+        } else {
+            if (binding.txtCompanyName != null) {
+                binding.txtCompanyName.setText("N/A");
+            }
+            if (binding.txtCompanyAddress != null) {
+                binding.txtCompanyAddress.setText("N/A");
+            }
+        }
+
         binding.switchNotifications.setChecked(prefsManager.isNotificationsEnabled());
         binding.switchHaptic.setChecked(prefsManager.isHapticEnabled());
+    }
+
+    private String buildAddressString(Vendor vendor) {
+        if (vendor == null) {
+            return null;
+        }
+
+        StringBuilder addressBuilder = new StringBuilder();
+        if (vendor.getAddress() != null && !vendor.getAddress().isEmpty()) {
+            addressBuilder.append(vendor.getAddress());
+        }
+        if (vendor.getCity() != null && !vendor.getCity().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(", ");
+            }
+            addressBuilder.append(vendor.getCity());
+        }
+        if (vendor.getState() != null && !vendor.getState().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(", ");
+            }
+            addressBuilder.append(vendor.getState());
+        }
+        if (vendor.getCountry() != null && !vendor.getCountry().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(", ");
+            }
+            addressBuilder.append(vendor.getCountry());
+        }
+        if (vendor.getZip() != null && !vendor.getZip().isEmpty()) {
+            if (addressBuilder.length() > 0) {
+                addressBuilder.append(" ");
+            }
+            addressBuilder.append(vendor.getZip());
+        }
+
+        return addressBuilder.length() > 0 ? addressBuilder.toString() : null;
     }
 
     private void loadProfilePicture(UserData user) {

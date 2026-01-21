@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@color/white"
     android:fillViewport="true"
     android:scrollbars="none"
     android:overScrollMode="never"
@@ -35,8 +35,8 @@
 
                 <ImageView
                     android:id="@+id/imgProfile"
-                    android:layout_width="90dp"
-                    android:layout_height="90dp"
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
                     android:layout_marginBottom="@dimen/dimen_16"
                     android:scaleType="centerCrop"
                     android:src="@drawable/avater_placeholder" />
@@ -175,7 +175,8 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:layout_marginBottom="@dimen/dimen_8">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -193,6 +194,73 @@
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/montserrat_semi_bold"
                         android:text="Manager"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_small"
+                        android:includeFontPadding="false" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/dimen_8"
+                    android:background="@color/text_hint" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="@dimen/dimen_8">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/dimen_4"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:text="Company Name"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_small"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/txtCompanyName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:text="Company Name"
+                        android:textColor="@color/text_primary"
+                        android:textSize="@dimen/text_size_small"
+                        android:includeFontPadding="false" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="@dimen/dimen_8"
+                    android:background="@color/text_hint" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/dimen_4"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:text="Company Address"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="@dimen/text_size_small"
+                        android:includeFontPadding="false" />
+
+                    <TextView
+                        android:id="@+id/txtCompanyAddress"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:text="Company Address"
                         android:textColor="@color/text_primary"
                         android:textSize="@dimen/text_size_small"
                         android:includeFontPadding="false" />

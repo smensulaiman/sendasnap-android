@@ -369,15 +369,13 @@ public class ScheduleDetailActivity extends AppCompatActivity {
 
         binding.layoutStatusBadge.setBackgroundTintList(ColorStateList.valueOf(backgroundColor));
         binding.textStatusValue.setText(statusText);
-        
-        if (binding.imgStatusIcon != null) {
-            binding.imgStatusIcon.setImageResource(iconRes);
-            binding.imgStatusIcon.setColorFilter(ContextCompat.getColor(this, R.color.white), android.graphics.PorterDuff.Mode.SRC_IN);
-        }
+
+        binding.imgStatusIcon.setImageResource(iconRes);
+        binding.imgStatusIcon.setColorFilter(ContextCompat.getColor(this, R.color.white), PorterDuff.Mode.SRC_IN);
     }
 
     private void displayPriority(Task.TaskPriority priority) {
-        if (binding == null || binding.layoutPriorityBadge == null || binding.textPriorityValue == null) {
+        if (binding == null) {
             return;
         }
 

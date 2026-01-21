@@ -26,6 +26,7 @@ import com.sendajapan.sendasnap.models.ErrorResponse;
 import com.sendajapan.sendasnap.models.LoginRequest;
 import com.sendajapan.sendasnap.models.LoginResponse;
 import com.sendajapan.sendasnap.models.UserData;
+import com.sendajapan.sendasnap.models.Vendor;
 import com.sendajapan.sendasnap.networking.ApiService;
 import com.sendajapan.sendasnap.networking.RetrofitClient;
 import com.sendajapan.sendasnap.services.ChatService;
@@ -170,14 +171,16 @@ public class LoginActivity extends AppCompatActivity {
                                 prefsManager.saveToken(token);
                             }
 
-                            // Create User from API response
                             UserData user = loginResponse.getData().getUser();
                             prefsManager.saveUser(user);
 
-                            // Initialize user in Firebase
+                            Vendor vendor = loginResponse.getData().getVendor();
+                            if (vendor != null) {
+                                prefsManager.saveVendor(vendor);
+                            }
+
                             ChatService.getInstance().initializeUser(LoginActivity.this);
                             
-                            // Register FCM token for push notifications
                             FcmTokenManager.registerToken(LoginActivity.this);
 
                             // Handle "Remember Me" functionality

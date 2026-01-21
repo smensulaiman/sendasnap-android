@@ -55,9 +55,9 @@
         android:layout_centerInParent="true"
         android:orientation="vertical">
 
-        <!-- Profile -->
+        <!-- Shipment Schedule -->
         <LinearLayout
-            android:id="@+id/menu_profile"
+            android:id="@+id/menu_shipment_schedule"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -66,28 +66,68 @@
             android:paddingEnd="16dp">
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
                 android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_user_24"
+                android:src="@drawable/ic_calendar_outlined"
                 app:tint="@color/text_primary" />
-
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Profile"
+                android:text="Shipment Schedule"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
                 android:textSize="@dimen/text_size_large"
                 android:gravity="bottom"
-                android:paddingTop="2dp"/>
-
+                android:paddingTop="2dp" />
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_chevron_right"
                 app:tint="@color/text_primary" />
+
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_margin="@dimen/dimen_8"
+            android:background="@color/primary" />
+
+        <!-- Search History -->
+        <LinearLayout
+            android:id="@+id/menu_history"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/ic_history_24"
+                app:tint="@color/text_primary" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Search History"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:textSize="@dimen/text_size_large"
+                android:gravity="bottom"
+                android:paddingTop="2dp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_chevron_right"
+                app:tint="@color/text_primary" />
+
         </LinearLayout>
 
         <!-- Divider -->
@@ -131,88 +171,40 @@
 
         </LinearLayout>
 
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_margin="@dimen/dimen_8"
-            android:background="@color/primary" />
+    </LinearLayout>
 
-        <!-- History -->
-        <LinearLayout
-            android:id="@+id/menu_history"
-            android:layout_width="match_parent"
+    <!-- Logout -->
+    <LinearLayout
+        android:id="@+id/menu_logout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/footerContainer"
+        android:layout_marginBottom="40dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_logout_24"
+            app:tint="@color/error_dark"/>
+
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
-
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_history_24"
-                app:tint="@color/text_primary" />
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="History"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:textSize="@dimen/text_size_large"
-                android:gravity="bottom"
-                android:paddingTop="2dp" />
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_chevron_right"
-                app:tint="@color/text_primary" />
-
-        </LinearLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_margin="@dimen/dimen_8"
-            android:background="@color/primary" />
-
-        <!-- Logout -->
-        <LinearLayout
-            android:id="@+id/menu_logout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp">
-
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/ic_logout_24"
-                app:tint="@color/error_dark"/>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Logout"
-                android:textStyle="bold"
-                android:textColor="@color/error_dark"
-                android:textSize="@dimen/text_size_large"
-                android:gravity="bottom"
-                android:paddingTop="2dp"/>
-
-        </LinearLayout>
+            android:text="Logout"
+            android:textStyle="bold"
+            android:textColor="@color/error_dark"
+            android:textSize="@dimen/text_size_large"/>
 
     </LinearLayout>
 
     <!-- App Version Footer -->
     <LinearLayout
+        android:id="@+id/footerContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -229,6 +221,7 @@
             android:fontFamily="@font/montserrat_regular" />
 
         <TextView
+            android:id="@+id/txtCopyright"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"

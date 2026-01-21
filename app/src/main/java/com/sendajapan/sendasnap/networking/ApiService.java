@@ -13,6 +13,15 @@ import com.sendajapan.sendasnap.models.UsersResponse;
 import com.sendajapan.sendasnap.models.Vehicle;
 import com.sendajapan.sendasnap.models.VehicleImageUploadResponse;
 import com.sendajapan.sendasnap.models.VehicleSearchResponse;
+import com.sendajapan.sendasnap.models.shipment.CreateScheduleRequest;
+import com.sendajapan.sendasnap.models.shipment.CreateStopoverRequest;
+import com.sendajapan.sendasnap.models.shipment.PortListResponse;
+import com.sendajapan.sendasnap.models.shipment.ScheduleListResponse;
+import com.sendajapan.sendasnap.models.shipment.ScheduleResponse;
+import com.sendajapan.sendasnap.models.shipment.ShippingCompanyListResponse;
+import com.sendajapan.sendasnap.models.shipment.StopoverResponse;
+import com.sendajapan.sendasnap.models.shipment.UpdateScheduleRequest;
+import com.sendajapan.sendasnap.models.shipment.UpdateStopoverRequest;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -21,6 +30,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -38,6 +48,10 @@ public interface ApiService {
     // Refresh token
     @POST("api/v1/auth/refresh")
     Call<LoginResponse> refreshToken();
+
+    // Get current authenticated user
+    @GET("api/v1/auth/me")
+    Call<LoginResponse> getMe();
 
     // Change password
     @POST("api/v1/auth/change-password")
@@ -122,5 +136,58 @@ public interface ApiService {
     // Get users list (new endpoint matching backend structure)
     @GET("api/v1/users")
     Call<ApiResponse<UsersListResponseDto>> getUsersList();
+
+    // Schedule endpoints
+    @GET("api/v1/schedules")
+    Call<ApiResponse<ScheduleListResponse>> getSchedules(
+            @Query("search") String search,
+            @Query("vessel_name") String vesselName,
+            @Query("voyage_no") String voyageNo,
+            @Query("carrier_id") Integer carrierId,
+            @Query("start_port_id") Integer startPortId,
+            @Query("end_port_id") Integer endPortId,
+            @Query("per_page") Integer perPage,
+            @Query("page") Integer page);
+
+    @POST("api/v1/schedules")
+    Call<ApiResponse<ScheduleResponse>> createSchedule(@Body CreateScheduleRequest request);
+
+    @GET("api/v1/schedules/{id}")
+    Call<ApiResponse<ScheduleResponse>> getSchedule(@Path("id") Integer id);
+
+    @PUT("api/v1/schedules/{id}")
+    Call<ApiResponse<ScheduleResponse>> updateSchedule(@Path("id") Integer id, @Body UpdateScheduleRequest request);
+
+    @DELETE("api/v1/schedules/{id}")
+    Call<ApiResponse<Object>> deleteSchedule(@Path("id") Integer id);
+
+    // Stopover endpoints
+    @POST("api/v1/schedules/{schedule_id}/stopovers")
+    Call<ApiResponse<StopoverResponse>> createStopover(@Path("schedule_id") Integer scheduleId, @Body CreateStopoverRequest request);
+
+    @GET("api/v1/stopovers/{id}")
+    Call<ApiResponse<StopoverResponse>> getStopover(@Path("id") Integer id);
+
+    @PUT("api/v1/stopovers/{id}")
+    Call<ApiResponse<StopoverResponse>> updateStopover(@Path("id") Integer id, @Body UpdateStopoverRequest request);
+
+    @DELETE("api/v1/stopovers/{id}")
+    Call<ApiResponse<Object>> deleteStopover(@Path("id") Integer id);
+
+    // Port endpoints
+    @GET("api/v1/ports")
+    Call<ApiResponse<PortListResponse>> getPorts(
+            @Query("search") String search,
+            @Query("port_type") String portType,
+            @Query("per_page") Integer perPage,
+            @Query("page") Integer page);
+
+    // Shipping company endpoints
+    @GET("api/v1/shipping-companies")
+    Call<ApiResponse<ShippingCompanyListResponse>> getShippingCompanies(
+            @Query("search") String search,
+            @Query("status") String status,
+            @Query("per_page") Integer perPage,
+            @Query("page") Integer page);
 
 }

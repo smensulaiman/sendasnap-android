@@ -1,87 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/color_background"
     android:elevation="12dp"
-    android:fitsSystemWindows="true"
-    tools:context=".activities.schedule.ScheduleDetailActivity">
+    android:fitsSystemWindows="true">
 
-    <!-- Top App Bar -->
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        app:elevation="4dp">
+        app:elevation="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="@android:color/transparent"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            app:navigationIconTint="@color/text_primary"
             app:title="Schedule Details"
-            app:titleTextAppearance="@style/TextAppearance.Material3.ActionBar.Title"
             app:titleTextColor="@color/text_primary"
-            android:paddingEnd="@dimen/dimen_8"/>
+            app:titleTextAppearance="@style/TextAppearance.Material3.ActionBar.Title"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:navigationIconTint="@color/text_primary"/>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Content -->
+    <!-- Blue radial gradient at bottom-left corner -->
+    <View
+        android:id="@+id/viewDiagonalGradient"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="0dp"
+        android:clickable="false"
+        android:focusable="false"
+        android:background="@drawable/gradient_radial_blue"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginBottom="-200dp"
+        android:layout_marginEnd="-200dp"/>
+
     <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
+        android:id="@+id/nestedScrollView"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:elevation="1dp"
+        android:background="@android:color/transparent"
         android:fillViewport="true"
+        android:scrollbars="none"
         android:overScrollMode="never"
-        android:paddingBottom="32dp"
-        android:scrollbars="none">
+        app:layout_constraintTop_toBottomOf="@id/appBarLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="@dimen/dimen_16">
+            android:background="@drawable/gradient_radial_fog_white"
+            android:paddingHorizontal="@dimen/dimen_16"
+            android:paddingBottom="32dp">
 
+            <!-- Status and Priority Badges - Top Right -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end">
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/dimen_16"
+                android:gravity="end"
+                android:layout_marginBottom="@dimen/dimen_8">
 
                 <LinearLayout
                     android:id="@+id/layoutStatusBadge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
+                    android:background="@drawable/badge_4"
                     android:padding="@dimen/dimen_8"
-                    android:layout_marginEnd="@dimen/dimen_8"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:backgroundTint="@color/primary">
+                    android:backgroundTint="@color/primary_light"
+                    android:gravity="center_vertical"
+                    android:layout_marginEnd="@dimen/dimen_8">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Status"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_size_small"
+                        android:paddingHorizontal="@dimen/dimen_8"
+                        android:paddingVertical="4dp"
+                        android:layout_marginEnd="@dimen/dimen_8"/>
 
                     <ImageView
                         android:id="@+id/imgStatusIcon"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:layout_marginEnd="@dimen/dimen_4"
-                        android:src="@drawable/ic_check_circle"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="4dp"
                         app:tint="@color/white" />
 
                     <TextView
                         android:id="@+id/textStatusValue"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/montserrat_bold"
-                        android:text="Pending"
+                        android:fontFamily="@font/montserrat_semi_bold"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/text_size_small"
-                        android:includeFontPadding="false" />
+                        android:textSize="@dimen/text_size_small"/>
 
                 </LinearLayout>
 
@@ -90,301 +118,287 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
+                    android:background="@drawable/badge_4"
                     android:padding="@dimen/dimen_8"
-                    android:background="@drawable/shimmer_placeholder"
-                    android:backgroundTint="@color/success">
+                    android:backgroundTint="@color/primary_light"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Priority"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/text_size_small"
+                        android:paddingHorizontal="@dimen/dimen_8"
+                        android:paddingVertical="4dp"
+                        android:layout_marginEnd="@dimen/dimen_8"/>
 
                     <ImageView
                         android:id="@+id/imgPriorityIcon"
-                        android:layout_width="14dp"
-                        android:layout_height="14dp"
-                        android:layout_marginEnd="@dimen/dimen_4"
-                        android:src="@drawable/ic_info"
-                        app:tint="@color/white" />
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="4dp"
+                        app:tint="@color/white"/>
 
                     <TextView
                         android:id="@+id/textPriorityValue"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/montserrat_bold"
-                        android:text="Normal"
+                        android:fontFamily="@font/montserrat_semi_bold"
                         android:textColor="@color/white"
-                        android:textSize="@dimen/text_size_small"
-                        android:includeFontPadding="false" />
+                        android:textSize="@dimen/text_size_small"/>
 
                 </LinearLayout>
 
             </LinearLayout>
 
-            <!-- Task Info -->
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/dimen_16"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/primary_light"
-                app:strokeColor="@color/primary_light"
-                app:strokeWidth="0dp">
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/dimen_16">
 
-                <LinearLayout
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Task Info"
+                    android:fontFamily="@font/montserrat_semi_bold"
+                    android:textColor="@color/text_black"
+                    android:textStyle="bold"/>
+
+                <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/dimen_16">
-                    <!-- Title -->
-                    <LinearLayout
+                    android:hint="Task Title"
+                    app:boxStrokeColor="@color/primary"
+                    app:hintTextColor="@color/text_secondary"
+                    android:layout_marginTop="@dimen/dimen_4"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:startIconTint="@color/primary"
+                    app:startIconContentDescription="Task title"
+                    app:boxStrokeErrorColor="@color/text_black"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/dimen_12"
-                        android:orientation="vertical">
+                        android:inputType="textCapSentences"
+                        android:maxLines="1"
+                        android:textSize="@dimen/text_size_small"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:textColor="@color/text_black"
+                        android:enabled="false"
+                        android:focusable="false"/>
 
-                        <TextView
-                            android:id="@+id/editTextTitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_semi_bold"
-                            android:textColor="@color/text_black"
-                            android:textSize="@dimen/text_size_medium"
-                            android:includeFontPadding="false"
-                            tools:text="Inspect Vehicle Engine" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                    </LinearLayout>
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dimen_8"
+                    android:hint="Description"
+                    app:boxStrokeColor="@color/primary"
+                    app:boxStrokeWidthFocused="2dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:startIconTint="@color/primary"
+                    app:startIconContentDescription="Task description"
+                    app:helperTextTextColor="@color/text_secondary"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-                    <!-- Description -->
-                    <LinearLayout
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextDescription"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/dimen_4"
-                        android:orientation="vertical">
+                        android:layout_height="120dp"
+                        android:inputType="textCapSentences|textMultiLine"
+                        android:textSize="@dimen/text_size_small"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:textColor="@color/text_black"
+                        android:gravity="top"
+                        android:enabled="false"
+                        android:focusable="false"/>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"
-                            android:fontFamily="@font/montserrat_semi_bold"
-                            android:text="Description"
-                            android:textColor="@color/gray_400"
-                            android:textSize="@dimen/text_size_small"
-                            android:includeFontPadding="false" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-                        <TextView
-                            android:id="@+id/editTextDescription"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_medium"
-                            android:maxLines="1000"
-                            android:scrollbars="none"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="@dimen/text_size_large"
-                            tools:text="Inspect the engine, check oil levels, and report any visible issues." />
-                    </LinearLayout>
+            </LinearLayout>
 
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Date & Time -->
-            <com.google.android.material.card.MaterialCardView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/dimen_16"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/primary_light"
-                app:strokeColor="@color/primary_light"
-                app:strokeWidth="0dp">
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/dimen_16">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="@dimen/dimen_16"
-                    android:weightSum="2">
-
-                    <!-- Date -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"
-                            android:fontFamily="@font/montserrat_semi_bold"
-                            android:text="Date"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="@dimen/text_size_small"
-                            android:includeFontPadding="false" />
-
-                        <TextView
-                            android:id="@+id/editTextDate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_semi_bold"
-                            android:textColor="@color/text_black"
-                            android:textSize="@dimen/text_size_small"
-                            android:includeFontPadding="false"
-                            tools:text="2024-01-15" />
-
-                    </LinearLayout>
-
-                    <!-- Time -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"
-                            android:fontFamily="@font/montserrat_semi_bold"
-                            android:text="Time"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="@dimen/text_size_small"
-                            android:includeFontPadding="false" />
-
-                        <TextView
-                            android:id="@+id/editTextTime"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/montserrat_semi_bold"
-                            android:textColor="@color/text_black"
-                            android:textSize="@dimen/text_size_small"
-                            android:includeFontPadding="false"
-                            tools:text="10:30 AM" />
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Assignees -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/dimen_16"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/primary_light"
-                app:strokeColor="@color/primary_light"
-                app:strokeWidth="0dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/dimen_16">
+                    android:orientation="vertical">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/dimen_8"
-                        android:fontFamily="@font/montserrat_semi_bold"
-                        android:text="Assignees"
-                        android:textColor="@color/text_black"
-                        android:textSize="@dimen/text_size_medium"
-                        android:textStyle="bold"
-                        android:includeFontPadding="false" />
-
-                    <TextView
-                        android:id="@+id/editTextAssignee"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="@dimen/dimen_8"
+                        android:text="Date and Time"
                         android:fontFamily="@font/montserrat_semi_bold"
                         android:textColor="@color/text_black"
-                        android:textSize="@dimen/text_size_small"
-                        android:includeFontPadding="false"
-                        tools:text="John Doe, Jane Smith" />
-
-                    <com.google.android.material.chip.ChipGroup
-                        android:id="@+id/chipGroupAssignees"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:chipSpacingHorizontal="8dp"
-                        app:chipSpacingVertical="8dp" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Attachments -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/dimen_16"
-                android:layout_marginBottom="@dimen/dimen_8"
-                app:cardBackgroundColor="@color/warning_light"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="@dimen/dimen_16">
+                        android:textStyle="bold"/>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="@dimen/dimen_8"
-                        android:orientation="horizontal">
+                        android:weightSum="2">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_marginEnd="12dp"
-                            android:src="@drawable/ic_attach_file"
-                            app:tint="@color/success_dark" />
-
-                        <TextView
+                        <com.google.android.material.textfield.TextInputLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:fontFamily="@font/montserrat_bold"
-                            android:text="File Attachments"
-                            android:textColor="@color/success_dark"
-                            android:textSize="@dimen/text_size_small"
-                            android:includeFontPadding="false" />
+                            android:hint="Select Date"
+                            app:boxStrokeColor="@color/primary"
+                            app:boxStrokeWidthFocused="2dp"
+                            app:hintTextColor="@color/text_secondary"
+                            app:startIconDrawable="@drawable/ic_calendar_outlined"
+                            app:startIconTint="@color/black"
+                            app:startIconContentDescription="Select date"
+                            android:layout_marginEnd="@dimen/dimen_16"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/editTextDate"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:inputType="date"
+                                android:textSize="@dimen/text_size_small"
+                                android:fontFamily="@font/montserrat_semi_bold"
+                                android:textColor="@color/text_black"
+                                android:padding="16dp"
+                                android:enabled="false"/>
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:hint="Select Time"
+                            app:boxStrokeColor="@color/primary"
+                            app:boxStrokeWidthFocused="2dp"
+                            app:hintTextColor="@color/text_secondary"
+                            app:startIconDrawable="@drawable/ic_time"
+                            app:startIconTint="@color/black"
+                            app:startIconContentDescription="Select time"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/editTextTime"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:clickable="false"
+                                android:focusable="false"
+                                android:inputType="time"
+                                android:textSize="@dimen/text_size_small"
+                                android:fontFamily="@font/montserrat_semi_bold"
+                                android:textColor="@color/text_black"
+                                android:padding="16dp"
+                                android:enabled="false"/>
+
+                        </com.google.android.material.textfield.TextInputLayout>
 
                     </LinearLayout>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewAttachments"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        android:visibility="gone" />
-
-                    <TextView
-                        android:id="@+id/textNoFiles"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/dimen_16"
-                        android:gravity="center"
-                        android:padding="@dimen/dimen_16"
-                        android:fontFamily="@font/montserrat_semi_bold"
-                        android:text="No files attached"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="@dimen/text_size_small"
-                        android:includeFontPadding="false" />
-
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/dimen_16">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Task Assignees"
+                    android:fontFamily="@font/montserrat_semi_bold"
+                    android:textColor="@color/text_black"
+                    android:textStyle="bold"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select Assignees"
+                    app:boxStrokeColor="@color/primary"
+                    app:boxStrokeWidthFocused="1dp"
+                    app:hintTextColor="@color/text_secondary"
+                    app:startIconTint="@color/black"
+                    app:startIconContentDescription="Select assignees"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/editTextAssignee"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clickable="false"
+                        android:focusable="false"
+                        android:fontFamily="@font/montserrat_semi_bold"
+                        android:inputType="none"
+                        android:padding="16dp"
+                        android:textColor="@color/text_black"
+                        android:textSize="@dimen/text_size_small"
+                        android:enabled="false"/>
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupAssignees"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:chipSpacingHorizontal="8dp"
+                    app:chipSpacingVertical="8dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="@dimen/dimen_16">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Attachments"
+                    android:fontFamily="@font/montserrat_semi_bold"
+                    android:textColor="@color/text_black"
+                    android:textStyle="bold"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewAttachments"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dimen_8"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone"/>
+
+                <TextView
+                    android:id="@+id/textNoFiles"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dimen_16"
+                    android:padding="@dimen/dimen_16"
+                    android:text="No files attached yet"
+                    android:fontFamily="@font/montserrat_semi_bold"
+                    android:textColor="@color/error_dark"
+                    android:textSize="@dimen/text_size_small"
+                    android:gravity="center"
+                    android:visibility="visible"/>
+
+            </LinearLayout>
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
-</LinearLayout>
-
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,6 +6,9 @@ public class LoginData {
     @SerializedName("user")
     private UserData user;
 
+    @SerializedName("vendor")
+    private Vendor vendor;
+
     @SerializedName("token")
     private String token;
 
@@ -18,6 +21,14 @@ public class LoginData {
 
     public void setUser(UserData user) {
         this.user = user;
+    }
+
+    public Vendor getVendor() {
+        return vendor;
+    }
+
+    public void setVendor(Vendor vendor) {
+        this.vendor = vendor;
     }
 
     public String getToken() {

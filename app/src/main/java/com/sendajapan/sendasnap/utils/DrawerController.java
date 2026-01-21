@@ -1,10 +1,15 @@
 package com.sendajapan.sendasnap.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.GravityCompat;
@@ -15,6 +20,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.sendajapan.sendasnap.R;
 import com.sendajapan.sendasnap.activities.HistoryActivity;
 import com.sendajapan.sendasnap.activities.MainActivity;
+import com.sendajapan.sendasnap.activities.shipment.ScheduleListActivity;
 
 public class DrawerController {
 
@@ -65,11 +71,17 @@ public class DrawerController {
             });
         }
 
-        // Setup menu item clicks
-        setupMenuItemClick(drawerContent, R.id.menu_profile, this::handleProfileNavigation);
         setupMenuItemClick(drawerContent, R.id.menu_settings, this::handleSettingsNavigation);
         setupMenuItemClick(drawerContent, R.id.menu_history, this::handleHistoryNavigation);
+        setupMenuItemClick(drawerContent, R.id.menu_shipment_schedule, this::handleShipmentScheduleNavigation);
         setupMenuItemClick(drawerContent, R.id.menu_logout, this::handleLogoutNavigation);
+        
+        // Set dynamic copyright year
+        TextView txtCopyright = drawerContent.findViewById(R.id.txtCopyright);
+        if (txtCopyright != null) {
+            @SuppressLint("SimpleDateFormat") String year = new SimpleDateFormat("yyyy").format(new Date());
+            txtCopyright.setText("© " + year + " SendaSnap. All rights reserved.");
+        }
     }
 
     private void setupMenuItemClick(View headerView, int menuItemId, Runnable action) {
@@ -83,19 +95,6 @@ public class DrawerController {
         }
     }
 
-    private void handleProfileNavigation() {
-        if (activity instanceof MainActivity) {
-            // If we're in MainActivity, switch to Profile tab
-            MainActivity mainActivity = (MainActivity) activity;
-            mainActivity.switchToProfileTab();
-        } else {
-            // Navigate to MainActivity and switch to Profile tab
-            Intent intent = new Intent(activity, MainActivity.class);
-            intent.putExtra("destination", "profile");
-            activity.startActivity(intent);
-        }
-    }
-
     private void handleSettingsNavigation() {
         // TODO: Implement SettingsActivity
         Toast.makeText(activity, "Settings coming soon!", Toast.LENGTH_SHORT).show();
@@ -103,11 +102,15 @@ public class DrawerController {
 
     private void handleHistoryNavigation() {
         if (activity instanceof HistoryActivity) {
-            // Already in HistoryActivity, just close drawer
             return;
         }
 
         Intent intent = new Intent(activity, HistoryActivity.class);
+        activity.startActivity(intent);
+    }
+
+    private void handleShipmentScheduleNavigation() {
+        Intent intent = new Intent(activity, ScheduleListActivity.class);
         activity.startActivity(intent);
     }
 

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="140dp"
+    android:layout_marginBottom="@dimen/dimen_8"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="4dp"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/primary"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/dimen_16">
+
+        <!-- Vessel name and arrow -->
+        <TextView
+            android:id="@+id/txtVesselName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="Vessel Name"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_size_medium"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/imgRightArrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imgRightArrow"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_chevron_right"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/black" />
+
+        <!-- Voyage number -->
+        <TextView
+            android:id="@+id/txtVoyageNo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/montserrat_regular"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="VOY-2024-001"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_size_xsmall"
+            app:layout_constraintEnd_toStartOf="@id/imgRightArrow"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/txtVesselName" />
+
+        <!-- Start circle (departure) -->
+        <View
+            android:id="@+id/viewCircleStart"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:background="@drawable/route_circle"
+            android:backgroundTint="@color/green_700"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/txtVoyageNo"
+            android:layout_marginTop="@dimen/dimen_12" />
+
+        <!-- End circle (arrival) -->
+        <View
+            android:id="@+id/viewCircleEnd"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:background="@drawable/route_circle"
+            android:backgroundTint="@color/red_500"
+            app:layout_constraintStart_toStartOf="@id/viewCircleStart"
+            app:layout_constraintBottom_toTopOf="@id/txtCreatedAt"
+            android:layout_marginBottom="@dimen/dimen_8" />
+
+        <!-- Vertical dashed connector between circles -->
+        <ImageView
+            android:id="@+id/viewRouteConnector"
+            android:layout_width="5dp"
+            android:layout_height="0dp"
+            app:tint="@color/zinc_600"
+            android:background="@drawable/vertical_dash"
+            android:layout_marginVertical="2dp"
+            app:layout_constraintStart_toStartOf="@id/viewCircleStart"
+            app:layout_constraintEnd_toEndOf="@id/viewCircleStart"
+            app:layout_constraintTop_toBottomOf="@id/viewCircleStart"
+            app:layout_constraintBottom_toTopOf="@id/viewCircleEnd"/>
+
+        <!-- Departure port aligned with start circle -->
+        <TextView
+            android:id="@+id/txtStartPort"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dimen_12"
+            android:ellipsize="end"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:text="Port of Los Angeles"
+            android:textColor="@color/text_black"
+            android:textSize="@dimen/text_size_small"
+            app:layout_constraintBottom_toBottomOf="@id/viewCircleStart"
+            app:layout_constraintEnd_toStartOf="@+id/imgRightArrow"
+            app:layout_constraintStart_toEndOf="@id/viewCircleStart"
+            app:layout_constraintTop_toTopOf="@id/viewCircleStart" />
+
+        <!-- Arrival port aligned with end circle -->
+        <TextView
+            android:id="@+id/txtEndPort"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dimen_12"
+            android:ellipsize="end"
+            android:fontFamily="@font/montserrat_semi_bold"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:text="Port of New York"
+            android:textColor="@color/text_black"
+            android:textSize="@dimen/text_size_small"
+            app:layout_constraintBottom_toBottomOf="@id/viewCircleEnd"
+            app:layout_constraintEnd_toStartOf="@+id/imgRightArrow"
+            app:layout_constraintStart_toEndOf="@id/viewCircleEnd"
+            app:layout_constraintTop_toTopOf="@id/viewCircleEnd" />
+
+        <!-- Created at at the bottom -->
+        <TextView
+            android:id="@+id/txtCreatedAt"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/montserrat_regular"
+            android:includeFontPadding="false"
+            android:text="Created: Feb 15, 2024"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_size_xsmall"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

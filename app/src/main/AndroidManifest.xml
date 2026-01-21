@@ -130,6 +130,47 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.SendaSnap" />
 
+        <!-- Shipment Schedule Activities -->
+        <activity
+            android:name=".activities.shipment.ScheduleListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.SendaSnap" />
+        
+        <activity
+            android:name=".activities.shipment.ScheduleDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.SendaSnap" />
+        
+        <activity
+            android:name=".activities.shipment.CreateScheduleActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.SendaSnap"
+            android:windowSoftInputMode="adjustResize" />
+        
+        <activity
+            android:name=".activities.shipment.EditScheduleActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.SendaSnap"
+            android:windowSoftInputMode="adjustResize" />
+        
+        <activity
+            android:name=".activities.shipment.CreateStopoverActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.SendaSnap"
+            android:windowSoftInputMode="adjustResize" />
+        
+        <activity
+            android:name=".activities.shipment.EditStopoverActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.SendaSnap"
+            android:windowSoftInputMode="adjustResize" />
+
         <!-- FileProvider for camera images -->
         <provider
             android:name="androidx.core.content.FileProvider"

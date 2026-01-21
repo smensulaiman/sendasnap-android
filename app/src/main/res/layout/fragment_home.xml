@@ -14,7 +14,7 @@
         <!-- Quick Actions Section with Futuristic AI Background -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="180dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
             app:strokeWidth="1dp"
@@ -34,7 +34,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/surface_variant"
+                    android:background="@color/zinc_200"
                     android:alpha=".9"/>
 
                 <ImageView
@@ -57,10 +57,11 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/dimen_4"
                         android:layout_marginVertical="@dimen/dimen_4"
-                        android:gravity="center_vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:id="@+id/imgProfile"
@@ -70,8 +71,9 @@
                             android:src="@drawable/avater_placeholder" />
 
                         <LinearLayout
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_weight="1"
                             android:layout_marginStart="@dimen/dimen_12"
                             android:orientation="vertical">
 
@@ -81,6 +83,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/montserrat"
                                 android:includeFontPadding="false"
+                                android:lineSpacingExtra="2dp"
                                 android:text="Name"
                                 android:textStyle="bold"
                                 android:textColor="@color/primary"
@@ -90,42 +93,72 @@
                                 android:id="@+id/txtUserEmail"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
                                 android:fontFamily="@font/montserrat_semi_bold"
+                                android:includeFontPadding="false"
+                                android:lineSpacingExtra="2dp"
                                 android:text="Email"
+                                android:visibility="gone"
                                 android:textColor="@color/green_500"
                                 android:textSize="@dimen/text_size_xsmall" />
 
                             <LinearLayout
-                                android:layout_width="180dp"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/dimen_8">
+                                android:layout_marginTop="4dp"
+                                android:orientation="vertical">
 
-                                <TextView
-                                    android:id="@+id/txtUserRole"
+                                <LinearLayout
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:background="@color/warning"
-                                    android:fontFamily="@font/montserrat_semi_bold"
-                                    android:includeFontPadding="false"
-                                    android:paddingHorizontal="@dimen/dimen_4"
-                                    android:layout_marginEnd="@dimen/dimen_4"
-                                    android:paddingVertical="2dp"
-                                    android:text="Role"
-                                    android:textColor="@color/black"
-                                    android:textSize="@dimen/text_size_xsmall" />
+                                    android:orientation="horizontal"
+                                    android:layout_marginBottom="4dp">
+
+                                    <TextView
+                                        android:id="@+id/txtUserRole"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="@color/warning"
+                                        android:fontFamily="@font/montserrat_semi_bold"
+                                        android:includeFontPadding="false"
+                                        android:lineSpacingExtra="0dp"
+                                        android:paddingHorizontal="@dimen/dimen_4"
+                                        android:layout_marginEnd="@dimen/dimen_4"
+                                        android:paddingVertical="2dp"
+                                        android:text="Role"
+                                        android:textColor="@color/black"
+                                        android:textSize="@dimen/text_size_xsmall" />
+
+                                    <TextView
+                                        android:id="@+id/txtUserCompany"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:background="@color/error_dark"
+                                        android:fontFamily="@font/montserrat_semi_bold"
+                                        android:includeFontPadding="false"
+                                        android:lineSpacingExtra="0dp"
+                                        android:paddingVertical="2dp"
+                                        android:paddingHorizontal="@dimen/dimen_4"
+                                        android:text="Company"
+                                        android:textColor="@color/white"
+                                        android:textSize="@dimen/text_size_xsmall" />
+
+                                </LinearLayout>
 
                                 <TextView
-                                    android:id="@+id/txtUserCompany"
-                                    android:layout_width="wrap_content"
+                                    android:id="@+id/txtCompanyAddress"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:background="@color/error_dark"
                                     android:fontFamily="@font/montserrat_semi_bold"
                                     android:includeFontPadding="false"
-                                    android:paddingVertical="2dp"
-                                    android:paddingHorizontal="@dimen/dimen_4"
-                                    android:text="Autocraft Japan"
-                                    android:textColor="@color/white"
-                                    android:textSize="@dimen/text_size_xsmall" />
+                                    android:lineSpacingExtra="2dp"
+                                    android:layout_marginEnd="@dimen/dimen_16"
+                                    android:text="Address"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="@dimen/text_size_xsmall"
+                                    android:maxLines="3"
+                                    android:ellipsize="end"
+                                    android:visibility="visible" />
 
                             </LinearLayout>
 
@@ -136,7 +169,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/dimen_16"
+                        android:layout_marginTop="@dimen/dimen_8"
                         android:gravity="center"
                         android:orientation="horizontal">
 
@@ -149,10 +182,11 @@
                             android:layout_weight="1"
                             android:fontFamily="@font/montserrat_bold"
                             android:text="Quick Search"
-                            android:textColor="@color/primary"
+                            android:textColor="@color/primary_medium"
                             android:textSize="@dimen/text_size_small"
                             app:cornerRadius="24dp"
-                            app:strokeColor="@color/primary" />
+                            app:strokeColor="@color/primary_medium"
+                            app:strokeWidth="2dp"/>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnViewStats"
@@ -161,12 +195,13 @@
                             android:layout_height="48dp"
                             android:layout_marginEnd="8dp"
                             android:layout_weight="1"
-                            android:fontFamily="@font/montserrat_semi_bold"
-                            android:text="History"
-                            android:textColor="@color/warning_dark"
+                            android:fontFamily="@font/montserrat_bold"
+                            android:text="Shipment"
+                            android:textColor="@color/emerald_600"
                             android:textSize="@dimen/text_size_small"
                             app:cornerRadius="24dp"
-                            app:strokeColor="@color/warning_dark" />
+                            app:strokeColor="@color/emerald_600"
+                            app:strokeWidth="2dp"/>
 
                     </LinearLayout>
 

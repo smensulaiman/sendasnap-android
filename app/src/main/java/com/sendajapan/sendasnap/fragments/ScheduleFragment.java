@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.sendajapan.sendasnap.R;
 import com.sendajapan.sendasnap.activities.schedule.AddScheduleActivity;
 import com.sendajapan.sendasnap.activities.schedule.ScheduleDetailActivity;
 import com.sendajapan.sendasnap.adapters.TaskAdapter;
@@ -47,7 +46,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -804,10 +802,10 @@ public class ScheduleFragment extends Fragment
 
         Call<ApiResponse<Object>> call = apiService.deleteTask(task.getId());
 
-        call.enqueue(new Callback<ApiResponse<Object>>() {
+        call.enqueue(new Callback<>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<Object>> call,
-                    @NonNull Response<ApiResponse<Object>> response) {
+                                   @NonNull Response<ApiResponse<Object>> response) {
                 dismissLoadingDialog();
 
                 if (response.isSuccessful() && response.body() != null) {

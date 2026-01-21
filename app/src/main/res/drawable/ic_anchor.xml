@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Simplified anchor icon -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,2a2,2 0 1,1 0,4 2,2 0 0,1 0,-4zM11,6h2v5h2.5c0.28,0 0.5,0.22 0.5,0.5 0,1.93 -1.57,3.5 -3.5,3.5s-3.5,-1.57 -3.5,-3.5c0,-0.28 0.22,-0.5 0.5,-0.5H11V6zM6,13h1.5c0.28,0 0.5,0.22 0.5,0.5 0,2.49 1.79,4.57 4.14,4.95L15,19.5V17h2v3c0,0.28 -0.22,0.5 -0.5,0.5h-9c-0.28,0 -0.5,-0.22 -0.5,-0.5v-3h2v2.5l2.86,-1.05C14.71,17.57 16.5,15.49 16.5,13.5c0,-0.28 0.22,-0.5 0.5,-0.5H18c0.28,0 0.5,0.22 0.5,0.5 0,3.04 -2.22,5.57 -5.17,5.96L12,20l-1.33,-0.54C7.72,18.57 5.5,16.04 5.5,13.5 5.5,13.22 5.72,13 6,13z" />
+
+</vector>

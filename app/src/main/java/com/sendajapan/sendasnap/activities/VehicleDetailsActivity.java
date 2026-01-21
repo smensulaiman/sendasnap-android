@@ -5,12 +5,14 @@ import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import java.util.List;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -492,131 +494,127 @@ public class VehicleDetailsActivity extends AppCompatActivity {
                 });
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    private static final String PREF_IMAGE_VIEWER_PACKAGE = "pref_image_viewer_package";
+
     private void showImagePreview(List<String> imageUrls, int startPosition) {
         if (imageUrls == null || imageUrls.isEmpty()) {
             return;
         }
 
-        Dialog previewDialog = new Dialog(this,
-                android.R.style.Theme_Black_NoTitleBar_Fullscreen);
-        View previewView = getLayoutInflater().inflate(R.layout.dialog_image_preview, null);
-        previewDialog.setContentView(previewView);
-
-        ImageView imgPreviewFull = previewView.findViewById(R.id.imgPreviewFull);
-        FloatingActionButton fabClosePreview = previewView
-                .findViewById(R.id.fabClosePreview);
-        TextView txtImageCounter = previewView.findViewById(R.id.txtImageCounter);
-
-        // Use array to store current position so it can be modified in inner class
-        final int[] currentPosition = { startPosition };
-
-        // Show counter if multiple images
-        if (imageUrls.size() > 1) {
-            txtImageCounter.setVisibility(View.VISIBLE);
-            updateImageCounter(txtImageCounter, currentPosition[0] + 1, imageUrls.size());
-        } else {
-            txtImageCounter.setVisibility(View.GONE);
+        // Get the image URL at the selected position
+        String imageUrl = imageUrls.get(startPosition);
+        if (imageUrl == null || imageUrl.isEmpty()) {
+            CookieBarToastHelper.showError(this, "Error", "Image URL is invalid", CookieBarToastHelper.SHORT_DURATION);
+            return;
         }
 
-        // Load current image
-        String currentImageUrl = imageUrls.get(currentPosition[0]);
-        if (currentImageUrl != null && !currentImageUrl.isEmpty()) {
-            Glide.with(this)
-                    .load(currentImageUrl)
-                    .placeholder(R.drawable.car_placeholder)
-                    .error(R.drawable.car_placeholder)
-                    .into(imgPreviewFull);
-        } else {
-            imgPreviewFull.setImageResource(R.drawable.car_placeholder);
-        }
-
-        // Close button
-        fabClosePreview.setOnClickListener(v -> {
-            hapticHelper.vibrateClick();
-            previewDialog.dismiss();
-        });
-
-        // Swipe to change images (if multiple images)
-        if (imageUrls.size() > 1) {
-            imgPreviewFull.setOnTouchListener(new SwipeGestureListener() {
-                @Override
-                public void onSwipeLeft() {
-                    // Next image
-                    currentPosition[0] = (currentPosition[0] + 1) % imageUrls.size();
-                    String nextImageUrl = imageUrls.get(currentPosition[0]);
-                    if (nextImageUrl != null && !nextImageUrl.isEmpty()) {
-                        Glide.with(VehicleDetailsActivity.this)
-                                .load(nextImageUrl)
-                                .placeholder(R.drawable.car_placeholder)
-                                .error(R.drawable.car_placeholder)
-                                .into(imgPreviewFull);
+        try {
+            // Create intent to view image
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Uri imageUri = Uri.parse(imageUrl);
+            intent.setDataAndType(imageUri, "image/*");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            
+            // Check if we have a saved preferred app
+            String preferredPackage = prefsManager.getString(PREF_IMAGE_VIEWER_PACKAGE, null);
+            
+            if (preferredPackage != null) {
+                // Try to use the preferred app
+                try {
+                    intent.setPackage(preferredPackage);
+                    if (intent.resolveActivity(getPackageManager()) != null) {
+                        // Preferred app is available, use it directly
+                        startActivity(intent);
+                        return;
+                    } else {
+                        // Preferred app is not available, clear it
+                        prefsManager.remove(PREF_IMAGE_VIEWER_PACKAGE);
                     }
-                    updateImageCounter(txtImageCounter, currentPosition[0] + 1, imageUrls.size());
+                } catch (Exception e) {
+                    // Preferred app is not available, clear it
+                    prefsManager.remove(PREF_IMAGE_VIEWER_PACKAGE);
                 }
-
-                @Override
-                public void onSwipeRight() {
-                    // Previous image
-                    currentPosition[0] = (currentPosition[0] - 1 + imageUrls.size()) % imageUrls.size();
-                    String prevImageUrl = imageUrls.get(currentPosition[0]);
-                    if (prevImageUrl != null && !prevImageUrl.isEmpty()) {
-                        Glide.with(VehicleDetailsActivity.this)
-                                .load(prevImageUrl)
-                                .placeholder(R.drawable.car_placeholder)
-                                .error(R.drawable.car_placeholder)
-                                .into(imgPreviewFull);
-                    }
-                    updateImageCounter(txtImageCounter, currentPosition[0] + 1, imageUrls.size());
-                }
-            });
-        }
-
-        previewDialog.show();
-    }
-
-    private void updateImageCounter(TextView counterView, int current, int total) {
-        counterView.setText(current + " / " + total);
-    }
-
-    // Simple swipe gesture listener
-    private abstract class SwipeGestureListener implements View.OnTouchListener {
-        private float startX;
-        private float startY;
-        private static final int SWIPE_THRESHOLD = 100;
-        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
-
-        @Override
-        public boolean onTouch(View v, android.view.MotionEvent event) {
-            switch (event.getAction()) {
-                case android.view.MotionEvent.ACTION_DOWN:
-                    startX = event.getX();
-                    startY = event.getY();
-                    return true;
-                case android.view.MotionEvent.ACTION_UP:
-                    float endX = event.getX();
-                    float endY = event.getY();
-                    float diffX = endX - startX;
-                    float diffY = endY - startY;
-
-                    if (Math.abs(diffX) > Math.abs(diffY)) {
-                        if (Math.abs(diffX) > SWIPE_THRESHOLD) {
-                            if (diffX > 0) {
-                                onSwipeRight();
-                            } else {
-                                onSwipeLeft();
-                            }
-                            return true;
-                        }
-                    }
-                    return false;
             }
-            return false;
+            
+            // No preferred app or it's not available, show app selection dialog
+            showImageAppSelectionDialog(imageUri);
+        } catch (Exception e) {
+            CookieBarToastHelper.showError(this, "Error", 
+                    "Unable to open image. Please check your internet connection.", 
+                    CookieBarToastHelper.SHORT_DURATION);
         }
+    }
 
-        public abstract void onSwipeLeft();
-
-        public abstract void onSwipeRight();
+    private void showImageAppSelectionDialog(Uri imageUri) {
+        // Query all apps that can handle image viewing
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(imageUri, "image/*");
+        List<ResolveInfo> resolveInfoList = getPackageManager().queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+        
+        if (resolveInfoList.isEmpty()) {
+            // No apps found, try browser
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, imageUri);
+            startActivity(browserIntent);
+            return;
+        }
+        
+        // Create bottom sheet dialog with app list
+        BottomSheetDialog dialog = new BottomSheetDialog(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_image_app_selector, null);
+        dialog.setContentView(dialogView);
+        
+        android.widget.ListView listView = dialogView.findViewById(R.id.listViewApps);
+        com.google.android.material.checkbox.MaterialCheckBox checkBoxRemember = dialogView.findViewById(R.id.checkBoxRemember);
+        
+        // Create adapter for app list
+        java.util.ArrayList<ResolveInfo> apps = new java.util.ArrayList<>(resolveInfoList);
+        android.widget.ArrayAdapter<ResolveInfo> adapter = new android.widget.ArrayAdapter<ResolveInfo>(
+                this, android.R.layout.simple_list_item_1, apps) {
+            @Override
+            public android.view.View getView(int position, android.view.View convertView, android.view.ViewGroup parent) {
+                if (convertView == null) {
+                    convertView = getLayoutInflater().inflate(android.R.layout.simple_list_item_1, parent, false);
+                }
+                ResolveInfo info = getItem(position);
+                android.widget.TextView textView = (android.widget.TextView) convertView.findViewById(android.R.id.text1);
+                textView.setText(info.loadLabel(getPackageManager()));
+                textView.setCompoundDrawablesWithIntrinsicBounds(
+                        info.loadIcon(getPackageManager()), null, null, null);
+                textView.setCompoundDrawablePadding(16);
+                return convertView;
+            }
+        };
+        
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            ResolveInfo selectedApp = apps.get(position);
+            String packageName = selectedApp.activityInfo.packageName;
+            
+            // Open image with selected app
+            Intent appIntent = new Intent(Intent.ACTION_VIEW);
+            appIntent.setDataAndType(imageUri, "image/*");
+            appIntent.setPackage(packageName);
+            appIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            appIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            
+            try {
+                startActivity(appIntent);
+                
+                // Save preference if "Remember" is checked
+                if (checkBoxRemember.isChecked()) {
+                    prefsManager.putString(PREF_IMAGE_VIEWER_PACKAGE, packageName);
+                }
+                
+                dialog.dismiss();
+            } catch (Exception e) {
+                CookieBarToastHelper.showError(this, "Error", 
+                        "Unable to open image with selected app.", 
+                        CookieBarToastHelper.SHORT_DURATION);
+            }
+        });
+        
+        dialog.show();
     }
 
     @Override
