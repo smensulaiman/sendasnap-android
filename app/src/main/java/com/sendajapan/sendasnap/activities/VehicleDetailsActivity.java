@@ -66,6 +66,7 @@ public class VehicleDetailsActivity extends AppCompatActivity {
     private VehicleImageGridAdapter vehicleImageAdapter;
 
     private Vehicle vehicle;
+    private String company;
     private Uri cameraImageUri;
     private final List<Uri> pendingImageUris = new ArrayList<>();
 
@@ -105,6 +106,7 @@ public class VehicleDetailsActivity extends AppCompatActivity {
 
     private void getVehicleData() {
         vehicle = (Vehicle) getIntent().getSerializableExtra("vehicle");
+        company = getIntent().getStringExtra("company");
         if (vehicle == null) {
             CookieBarToastHelper.showError(this, "Error", "Vehicle data not found",
                     CookieBarToastHelper.LONG_DURATION);
@@ -432,7 +434,7 @@ public class VehicleDetailsActivity extends AppCompatActivity {
             loadingDialog.show();
         }
 
-        imageUploadService.uploadImages(vehicleId, new ArrayList<>(pendingImageUris),
+        imageUploadService.uploadImages(vehicleId, company, new ArrayList<>(pendingImageUris),
                 new VehicleImageUploadService.UploadCallback() {
                     @SuppressLint("NotifyDataSetChanged")
                     @Override

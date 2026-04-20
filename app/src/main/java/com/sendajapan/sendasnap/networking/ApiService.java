@@ -1,6 +1,8 @@
 package com.sendajapan.sendasnap.networking;
 
 import com.sendajapan.sendasnap.data.dto.StatusUpdateRequest;
+import com.sendajapan.sendasnap.data.dto.YardVehicleRequestDto;
+import com.sendajapan.sendasnap.data.dto.YardVehicleResponseDto;
 import com.sendajapan.sendasnap.data.dto.TaskResponseDto;
 import com.sendajapan.sendasnap.data.dto.TasksListResponseDto;
 import com.sendajapan.sendasnap.data.dto.UsersListResponseDto;
@@ -61,11 +63,16 @@ public interface ApiService {
     @GET("vehicle/{chassisNumber}")
     Call<Vehicle> getVehicleByChassisNumber(@Path("chassisNumber") String chassisNumber);
 
+    // Get vehicles by yard
+    @POST("api/v1/vehicles/yard")
+    Call<YardVehicleResponseDto> getYardVehicles(@Body YardVehicleRequestDto request);
+
     // Search vehicles
     @GET("api/v1/vehicles/search")
     Call<VehicleSearchResponse> searchVehicles(
             @Query("search_type") String searchType,
-            @Query("search_query") String searchQuery);
+            @Query("search_query") String searchQuery,
+            @Query("company") String company);
 
     // Upload vehicle images
     @Multipart
@@ -79,6 +86,7 @@ public interface ApiService {
     @POST("api/v1/vehicles/upload-images")
     Call<VehicleImageUploadResponse> uploadVehicleImagesNew(
             @Part("vehicle_id") okhttp3.RequestBody vehicleId,
+            @Part("company") okhttp3.RequestBody company,
             @Part List<MultipartBody.Part> images);
 
     // Get all users

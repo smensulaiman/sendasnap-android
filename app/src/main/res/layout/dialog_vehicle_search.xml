@@ -7,7 +7,6 @@
     android:padding="24dp"
     android:background="@color/white">
 
-    <!-- Header -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="match_parent"
@@ -16,86 +15,206 @@
         android:textColor="@color/text_primary"
         android:textSize="@dimen/text_size_large"
         android:fontFamily="@font/montserrat_semi_bold"
-        android:layout_marginBottom="8dp" />
+        android:layout_marginBottom="12dp" />
 
-    <TextView
-        android:id="@+id/tvSubtitle"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select search type and enter search query to find vehicle details."
-        android:textColor="@color/text_secondary"
-        android:textSize="@dimen/text_size_small"
-        android:fontFamily="@font/montserrat_regular"
-        android:layout_marginBottom="20dp" />
-
-    <!-- Search Type Spinner -->
-    <LinearLayout
-        android:id="@+id/layoutSpinnerContainer"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/outline_box_shape"
-        android:backgroundTint="@color/text_secondary"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:background="@android:color/transparent"
+        app:tabMode="fixed"
+        app:tabGravity="fill"
+        app:tabSelectedTextColor="@color/primary"
+        app:tabTextColor="@color/text_secondary"
+        app:tabIndicatorColor="@color/primary"
+        app:tabRippleColor="@color/primary_light" />
 
-        <Spinner
-            android:id="@+id/spinnerSearchType"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:background="@android:color/transparent"
-            android:padding="0dp"
-            android:spinnerMode="dropdown"
-            android:dropDownWidth="match_parent"
-            android:popupBackground="@android:color/transparent" />
+    <!-- Search Tab Content -->
+    <LinearLayout
+        android:id="@+id/layoutSearchContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <View
-            android:layout_width="1dp"
-            android:layout_height="match_parent"
-            android:background="@color/text_secondary" />
+        <TextView
+            android:id="@+id/tvSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select search type and enter search query to find vehicle details."
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_size_small"
+            android:fontFamily="@font/montserrat_regular"
+            android:layout_marginBottom="16dp" />
 
-        <ImageView
-            android:id="@+id/imgSpinnerArrow"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:layout_gravity="center"
-            android:src="@drawable/outline_arrow_ios_24"
-            android:rotation="90"
-            android:contentDescription="Select search type"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackgroundBorderless"
-            android:layout_marginHorizontal="@dimen/dimen_8" />
+        <LinearLayout
+            android:id="@+id/layoutCompanySpinnerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/outline_box_shape"
+            android:backgroundTint="@color/text_secondary"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spinnerCompany"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:padding="0dp"
+                android:spinnerMode="dropdown"
+                android:dropDownWidth="match_parent"
+                android:popupBackground="@android:color/transparent" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/text_secondary" />
+
+            <ImageView
+                android:id="@+id/imgCompanySpinnerArrow"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/outline_arrow_ios_24"
+                android:rotation="90"
+                android:contentDescription="Select company"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginHorizontal="@dimen/dimen_8" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutSpinnerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/outline_box_shape"
+            android:backgroundTint="@color/text_secondary"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Spinner
+                android:id="@+id/spinnerSearchType"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:padding="0dp"
+                android:spinnerMode="dropdown"
+                android:dropDownWidth="match_parent"
+                android:popupBackground="@android:color/transparent" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/text_secondary" />
+
+            <ImageView
+                android:id="@+id/imgSpinnerArrow"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/outline_arrow_ios_24"
+                android:rotation="90"
+                android:contentDescription="Select search type"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginHorizontal="@dimen/dimen_8" />
+
+        </LinearLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSearchQuery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Enter search query"
+            app:helperText="ex: 251144"
+            app:boxStrokeColor="@color/primary"
+            app:hintTextColor="@color/primary"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSearchQuery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:textSize="@dimen/text_size_medium"
+                android:textColor="@color/text_primary"
+                android:fontFamily="@font/montserrat_semi_bold" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
     </LinearLayout>
 
-    <!-- Input -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilSearchQuery"
+    <!-- Yard Tab Content -->
+    <LinearLayout
+        android:id="@+id/layoutYardContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:hint="Enter search query"
-        app:helperText="ex: 251144"
-        app:boxStrokeColor="@color/primary"
-        app:hintTextColor="@color/primary"
-        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+        android:orientation="vertical"
+        android:visibility="gone">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etSearchQuery"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:textSize="@dimen/text_size_medium"
-            android:textColor="@color/text_primary"
-            android:fontFamily="@font/montserrat_semi_bold" />
+            android:text="Select a yard to browse its vehicles."
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_size_small"
+            android:fontFamily="@font/montserrat_regular"
+            android:layout_marginBottom="16dp" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+        <LinearLayout
+            android:id="@+id/layoutYardSpinnerContainer"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/outline_box_shape"
+            android:backgroundTint="@color/text_secondary"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-    <!-- Primary Action -->
+            <Spinner
+                android:id="@+id/spinnerYard"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:padding="0dp"
+                android:spinnerMode="dropdown"
+                android:dropDownWidth="match_parent"
+                android:popupBackground="@android:color/transparent" />
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="@color/text_secondary" />
+
+            <ImageView
+                android:id="@+id/imgYardSpinnerArrow"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:src="@drawable/outline_arrow_ios_24"
+                android:rotation="90"
+                android:contentDescription="Select yard"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginHorizontal="@dimen/dimen_8" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSearch"
+        android:id="@+id/btnAction"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:text="@string/search"
@@ -107,9 +226,8 @@
         app:cornerRadius="4dp"
         app:rippleColor="@color/primary_variant"
         android:padding="@dimen/dimen_0"
-        android:layout_margin="0dp"/>
+        android:layout_margin="0dp" />
 
-    <!-- Action Buttons -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCancel"
         android:layout_width="match_parent"

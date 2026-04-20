@@ -27,6 +27,7 @@ import com.google.gson.Gson;
 import com.sendajapan.sendasnap.R;
 import com.sendajapan.sendasnap.activities.NotificationsActivity;
 import com.sendajapan.sendasnap.activities.VehicleDetailsActivity;
+import com.sendajapan.sendasnap.activities.YardVehicleListActivity;
 import com.sendajapan.sendasnap.activities.auth.LoginActivity;
 import com.sendajapan.sendasnap.activities.shipment.ScheduleListActivity;
 import com.sendajapan.sendasnap.adapters.VehicleAdapter;
@@ -48,6 +49,7 @@ import com.sendajapan.sendasnap.utils.SharedPrefsManager;
 import com.sendajapan.sendasnap.utils.VehicleCache;
 
 import java.util.List;
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -177,32 +179,29 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
         }
 
         if (vendor != null) {
-            if (binding.txtUserCompany != null) {
-                String companyName = vendor.getName();
-                if (companyName != null && !companyName.isEmpty()) {
-                    binding.txtUserCompany.setText(companyName);
-                    binding.txtUserCompany.setVisibility(View.VISIBLE);
-                } else {
-                    binding.txtUserCompany.setVisibility(View.GONE);
-                }
-            }
+            String companyName = vendor.getName();
+            if (companyName != null && !companyName.isEmpty()) {
+                binding.txtUserCompany.setText(companyName);
+                binding.txtUserCompany.setVisibility(View.VISIBLE);
 
-            if (binding.txtCompanyAddress != null) {
-                String address = buildAddressString(vendor);
-                if (address != null && !address.isEmpty()) {
-                    binding.txtCompanyAddress.setText(address);
-                    binding.txtCompanyAddress.setVisibility(View.VISIBLE);
-                } else {
-                    binding.txtCompanyAddress.setVisibility(View.GONE);
+                if(!companyName.equals("AUTOCRAFT JAPAN LTD")){
+                    binding.txtUserCompany.setBackgroundColor(requireContext().getColor(R.color.primary));
                 }
-            }
-        } else {
-            if (binding.txtUserCompany != null) {
+
+            } else {
                 binding.txtUserCompany.setVisibility(View.GONE);
             }
-            if (binding.txtCompanyAddress != null) {
+
+            String address = buildAddressString(vendor);
+            if (address != null && !address.isEmpty()) {
+                binding.txtCompanyAddress.setText(address);
+                binding.txtCompanyAddress.setVisibility(View.VISIBLE);
+            } else {
                 binding.txtCompanyAddress.setVisibility(View.GONE);
             }
+        } else {
+            binding.txtUserCompany.setVisibility(View.GONE);
+            binding.txtCompanyAddress.setVisibility(View.GONE);
         }
     }
 
@@ -249,9 +248,23 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
 
     private void showSearchDialog() {
         new VehicleSearchDialog.Builder(requireContext())
-                .setOnSearchListener(this::performSearchFromDialog)
+                .setOnSearchListener(new VehicleSearchDialog.OnSearchListener() {
+                    @Override
+                    public void onSearch(String searchType, String searchQuery, String company) {
+                        performSearchFromDialog(searchType, searchQuery, company);
+                    }
+
+                    @Override
+                    public void onYardSearch(String yardId, String company, String yardName) {
+                        performYardSearch(yardId, company, yardName);
+                    }
+                })
                 .setCancelable(true)
                 .show();
+    }
+
+    private void performYardSearch(String yardId, String company, String yardName) {
+        startActivity(YardVehicleListActivity.newIntent(requireContext(), yardId, company, yardName));
     }
 
     private void showLoadingDialog(String message) {
@@ -272,7 +285,7 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
         }
     }
 
-    private void performSearchFromDialog(String searchType, String searchQuery) {
+    private void performSearchFromDialog(String searchType, String searchQuery, String company) {
         if (!networkUtils.isNetworkAvailable()) {
             CookieBarToastHelper.showNoInternet(requireContext());
             hapticHelper.vibrateError();
@@ -281,7 +294,7 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
 
         showLoadingDialog("Searching vehicles, please wait...");
 
-        Call<VehicleSearchResponse> call = apiService.searchVehicles(searchType, searchQuery);
+        Call<VehicleSearchResponse> call = apiService.searchVehicles(searchType, searchQuery, company);
         call.enqueue(new Callback<VehicleSearchResponse>() {
             @Override
             public void onResponse(@NonNull Call<VehicleSearchResponse> call,
@@ -305,15 +318,18 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
                                 Vehicle vehicle = vehicles.get(0);
                                 vehicleCache.addVehicle(vehicle);
 
+                                String responseCompany = data.getCompany() != null ? data.getCompany() : company;
                                 Intent intent = new Intent(requireContext(), VehicleDetailsActivity.class);
                                 intent.putExtra("vehicle", vehicle);
+                                intent.putExtra("company", responseCompany);
                                 startActivity(intent);
 
                                 CookieBarToastHelper.showSuccess(requireContext(), "Vehicle Found",
                                         "Vehicle details loaded successfully!",
                                         CookieBarToastHelper.LONG_DURATION);
                             } else {
-                                showSearchResultsDialog(vehicles);
+                                String responseCompany = data.getCompany() != null ? data.getCompany() : company;
+                                showSearchResultsDialog(vehicles, responseCompany);
                             }
                         } else {
                             CookieBarToastHelper.showError(requireContext(), "Error",
@@ -357,7 +373,7 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
         });
     }
 
-    private void showSearchResultsDialog(List<Vehicle> vehicles) {
+    private void showSearchResultsDialog(List<Vehicle> vehicles, String company) {
         Dialog resultsDialog = new Dialog(requireContext());
         resultsDialog.setContentView(R.layout.dialog_vehicle_search_results);
         if (resultsDialog.getWindow() != null) {
@@ -384,6 +400,7 @@ public class HomeFragment extends Fragment implements VehicleAdapter.OnVehicleCl
 
             Intent intent = new Intent(requireContext(), VehicleDetailsActivity.class);
             intent.putExtra("vehicle", vehicle);
+            intent.putExtra("company", company);
             startActivity(intent);
         });
 

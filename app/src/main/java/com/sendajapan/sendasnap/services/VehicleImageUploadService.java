@@ -32,8 +32,7 @@ import retrofit2.Response;
 
 public class VehicleImageUploadService {
 
-    private static final String TAG = "VehicleImageUpload";
-    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB in bytes
+    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
 
     private final ApiService apiService;
     private final Context context;
@@ -49,14 +48,7 @@ public class VehicleImageUploadService {
         this.apiService = RetrofitClient.getInstance(context).getApiService();
     }
 
-    /**
-     * Upload vehicle images to the server
-     * 
-     * @param vehicleId  The vehicle ID (integer from external database)
-     * @param imageUris  List of image URIs (content:// or file://)
-     * @param callback   Callback for success/error handling
-     */
-    public void uploadImages(int vehicleId, List<Uri> imageUris, UploadCallback callback) {
+    public void uploadImages(int vehicleId, String company, List<Uri> imageUris, UploadCallback callback) {
         if (imageUris == null || imageUris.isEmpty()) {
             callback.onError("No images to upload", 422);
             return;
@@ -106,13 +98,14 @@ public class VehicleImageUploadService {
             imageParts.add(imagePart);
         }
 
-        // Create vehicle_id part
         RequestBody vehicleIdBody = RequestBody.create(
                 MediaType.parse("text/plain"), String.valueOf(vehicleId));
 
-        // Make API call
+        RequestBody companyBody = RequestBody.create(
+                MediaType.parse("text/plain"), company != null ? company : "");
+
         Call<VehicleImageUploadResponse> call = apiService.uploadVehicleImagesNew(
-                vehicleIdBody, imageParts);
+                vehicleIdBody, companyBody, imageParts);
 
         call.enqueue(new Callback<VehicleImageUploadResponse>() {
             @Override

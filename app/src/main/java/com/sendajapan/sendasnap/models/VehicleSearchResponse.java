@@ -57,6 +57,9 @@ public class VehicleSearchResponse {
         @SerializedName("vehicles")
         private List<Vehicle> vehicles;
 
+        @SerializedName("company")
+        private String company;
+
         public VehicleSearchData() {
         }
 
@@ -66,6 +69,14 @@ public class VehicleSearchResponse {
 
         public void setVehicles(List<Vehicle> vehicles) {
             this.vehicles = vehicles;
+        }
+
+        public String getCompany() {
+            return company;
+        }
+
+        public void setCompany(String company) {
+            this.company = company;
         }
     }
 }
