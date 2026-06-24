@@ -27,12 +27,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _animCtrl, curve: Curves.easeIn),
-    );
-    _scaleAnim = Tween<double>(begin: 0.85, end: 1).animate(
-      CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack),
-    );
+    _fadeAnim = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeIn));
+    _scaleAnim = Tween<double>(
+      begin: 0.85,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutBack));
     _animCtrl.forward();
     _navigate();
   }
@@ -90,21 +92,31 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const _LogoMark(size: 80),
-                  const SizedBox(height: 20),
-                  Text(
-                    'SendaSnap',
-                    style: AppTextStyles.displayLarge.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1,
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 32,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: 130,
+                      height: 130,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 24),
                   Text(
                     "Japan's Logistics Companion",
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.white.withOpacity(0.7),
+                      color: AppColors.white.withValues(alpha: 0.75),
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ],
@@ -117,24 +129,3 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 }
 
-class _LogoMark extends StatelessWidget {
-  final double size;
-  const _LogoMark({required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        color: AppColors.white.withOpacity(0.15),
-        shape: BoxShape.circle,
-        border: Border.all(color: AppColors.white.withOpacity(0.4), width: 2),
-      ),
-      child: Center(
-        child: Icon(Icons.local_shipping_rounded,
-            color: AppColors.white, size: size * 0.5),
-      ),
-    );
-  }
-}
