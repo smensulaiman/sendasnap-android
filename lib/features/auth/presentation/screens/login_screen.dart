@@ -218,7 +218,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   position: _cardSlide,
                   child: FadeTransition(
                     opacity: _cardFade,
-                    child: Stack(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(36),
+                        ),
+                      ),
+                      child: Stack(
                       children: [
                         Positioned(
                           top: -60,
@@ -373,6 +380,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                           ),
                         ),
                       ],
+                    ),
                     ),
                   ),
                 ),
