@@ -54,24 +54,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: AppColors.scaffold,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _openSearchSheet(context),
-          backgroundColor: AppColors.primary,
-          foregroundColor: AppColors.white,
-          child: const Icon(Icons.search_rounded),
-        ),
         body: Column(
           children: [
-            // ── Gradient header ──────────────────────────────────────
-            _GradientHeader(
-              name: user?.name ?? '',
-              email: user?.email ?? '',
-              role: user?.role ?? '',
-              avatarUrl: user?.avatarUrl,
-              vendorName: vendor?.name,
-              vendorAddress: vendor?.formattedAddress,
-              onNotifications: () =>
-                  context.push('/coming-soon', extra: 'Notifications'),
+            // ── Gradient header with floating search bar ─────────────
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                _GradientHeader(
+                  name: user?.name ?? '',
+                  email: user?.email ?? '',
+                  role: user?.role ?? '',
+                  avatarUrl: user?.avatarUrl,
+                  vendorName: vendor?.name,
+                  vendorAddress: vendor?.formattedAddress,
+                  onNotifications: () =>
+                      context.push('/coming-soon', extra: 'Notifications'),
+                ),
+                Positioned(
+                  left: AppDimens.lg,
+                  right: AppDimens.lg,
+                  bottom: -28,
+                  child: _SearchBar(onTap: () => _openSearchSheet(context)),
+                ),
+              ],
             ),
 
             // ── Scrollable content ───────────────────────────────────
@@ -82,28 +87,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(
-                      AppDimens.lg, AppDimens.lg, AppDimens.lg, 80),
+                      AppDimens.lg, 44, AppDimens.lg, 100),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Quick search
+                      // Quick actions
                       Text(AppStrings.quickSearch,
                           style: AppTextStyles.sectionHeader),
                       const Gap(AppDimens.md),
                       Row(
                         children: [
                           Expanded(
-                            child: _QuickActionCard(
+                            child: _ActionTile(
                               icon: Icons.search_rounded,
                               label: AppStrings.searchVehicle,
+                              subtitle: 'By chassis or name',
+                              gradient: const [
+                                Color(0xFF1E88E5),
+                                Color(0xFF1565C0),
+                              ],
                               onTap: () => _openSearchSheet(context),
                             ),
                           ),
                           const Gap(AppDimens.md),
                           Expanded(
-                            child: _QuickActionCard(
+                            child: _ActionTile(
                               icon: Icons.warehouse_rounded,
                               label: AppStrings.browseYard,
+                              subtitle: 'Browse by yard',
+                              gradient: const [
+                                Color(0xFF1565C0),
+                                Color(0xFF0D3C6E),
+                              ],
                               onTap: () =>
                                   _openSearchSheet(context, yardTab: true),
                             ),
@@ -207,7 +222,7 @@ class _GradientHeader extends StatelessWidget {
     final topPad = MediaQuery.paddingOf(context).top;
     return Container(
       padding: EdgeInsets.fromLTRB(
-          AppDimens.lg, topPad + AppDimens.md, AppDimens.lg, AppDimens.xl),
+          AppDimens.lg, topPad + AppDimens.md, AppDimens.lg, AppDimens.xxl + 20),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -361,64 +376,144 @@ class _GlassChip extends StatelessWidget {
   }
 }
 
-// ── Quick action card ─────────────────────────────────────────────────────
+// ── Floating search bar ───────────────────────────────────────────────────
 
-class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
+class _SearchBar extends StatelessWidget {
   final VoidCallback onTap;
-
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _SearchBar({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.white,
-      borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+      borderRadius: BorderRadius.circular(18),
       elevation: 0,
-      shadowColor: Colors.transparent,
-      child: Ink(
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-          border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.08),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimens.lg),
-            child: Column(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Ink(
+          height: 58,
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0D3C6E).withValues(alpha: 0.18),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Gap(AppDimens.lg),
+              Icon(Icons.search_rounded,
+                  color: AppColors.primary, size: 22),
+              const Gap(AppDimens.md),
+              Expanded(
+                child: Text(
+                  'Search vehicles, chassis…',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: Container(
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [Color(0xFF1E88E5), AppColors.primary],
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: AppColors.white, size: 24),
+                  child: const Icon(Icons.tune_rounded,
+                      color: AppColors.white, size: 20),
                 ),
-                const Gap(AppDimens.sm),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Gradient action tile ──────────────────────────────────────────────────
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String subtitle;
+  final List<Color> gradient;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.subtitle,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: gradient,
+            ),
+            borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+            boxShadow: [
+              BoxShadow(
+                color: gradient.last.withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimens.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.20),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: AppColors.white, size: 22),
+                ),
+                const Gap(AppDimens.md),
                 Text(
                   label,
-                  style: AppTextStyles.titleMedium,
-                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Gap(2),
+                Text(
+                  subtitle,
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.75),
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
