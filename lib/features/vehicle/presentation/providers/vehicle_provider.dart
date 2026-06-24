@@ -2,8 +2,12 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/vehicle_remote_data_source.dart';
 import '../../data/models/vehicle_model.dart';
+import '../../../../core/errors/app_exception.dart';
 import '../../../../core/storage/local_storage.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+
+String _errorMessage(Object e) =>
+    e is AppException ? e.message : e.toString().replaceFirst('Exception: ', '');
 
 // ── Vehicle search ────────────────────────────────────────────────────────
 
@@ -23,20 +27,18 @@ class VehicleSearchState {
     List<VehicleModel>? results,
     String? error,
     bool clearError = false,
-  }) =>
-      VehicleSearchState(
-        isLoading: isLoading ?? this.isLoading,
-        results: results ?? this.results,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => VehicleSearchState(
+    isLoading: isLoading ?? this.isLoading,
+    results: results ?? this.results,
+    error: clearError ? null : (error ?? this.error),
+  );
 }
 
 class VehicleSearchNotifier extends StateNotifier<VehicleSearchState> {
   final VehicleRemoteDataSource _dataSource;
 
-  VehicleSearchNotifier({required VehicleRemoteDataSource dataSource})
-      : _dataSource = dataSource,
-        super(const VehicleSearchState());
+  VehicleSearchNotifier({required this._dataSource})
+    : super(const VehicleSearchState());
 
   Future<void> search({
     required String searchType,
@@ -54,7 +56,7 @@ class VehicleSearchNotifier extends StateNotifier<VehicleSearchState> {
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString().replaceFirst('Exception: ', ''),
+        error: _errorMessage(e),
       );
     }
   }
@@ -99,38 +101,40 @@ class YardVehiclesState {
     bool clearModel = false,
     bool clearYear = false,
     bool clearChassis = false,
-  }) =>
-      YardVehiclesState(
-        isLoading: isLoading ?? this.isLoading,
-        vehicles: vehicles ?? this.vehicles,
-        filtered: filtered ?? this.filtered,
-        error: clearError ? null : (error ?? this.error),
-        filterMake: clearMake ? null : (filterMake ?? this.filterMake),
-        filterModel: clearModel ? null : (filterModel ?? this.filterModel),
-        filterYear: clearYear ? null : (filterYear ?? this.filterYear),
-        filterChassis:
-            clearChassis ? null : (filterChassis ?? this.filterChassis),
-      );
+  }) => YardVehiclesState(
+    isLoading: isLoading ?? this.isLoading,
+    vehicles: vehicles ?? this.vehicles,
+    filtered: filtered ?? this.filtered,
+    error: clearError ? null : (error ?? this.error),
+    filterMake: clearMake ? null : (filterMake ?? this.filterMake),
+    filterModel: clearModel ? null : (filterModel ?? this.filterModel),
+    filterYear: clearYear ? null : (filterYear ?? this.filterYear),
+    filterChassis: clearChassis ? null : (filterChassis ?? this.filterChassis),
+  );
 }
 
 class YardVehiclesNotifier extends StateNotifier<YardVehiclesState> {
   final VehicleRemoteDataSource _dataSource;
 
-  YardVehiclesNotifier({required VehicleRemoteDataSource dataSource})
-      : _dataSource = dataSource,
-        super(const YardVehiclesState());
+  YardVehiclesNotifier({required this._dataSource})
+    : super(const YardVehiclesState());
 
   Future<void> loadYard({required int yardId, required String company}) async {
     state = const YardVehiclesState(isLoading: true);
     try {
       final vehicles = await _dataSource.getYardVehicles(
-          yardId: yardId, company: company);
+        yardId: yardId,
+        company: company,
+      );
       state = state.copyWith(
-          isLoading: false, vehicles: vehicles, filtered: vehicles);
+        isLoading: false,
+        vehicles: vehicles,
+        filtered: vehicles,
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString().replaceFirst('Exception: ', ''),
+        error: _errorMessage(e),
       );
     }
   }
@@ -160,53 +164,33 @@ class YardVehiclesNotifier extends StateNotifier<YardVehiclesState> {
   }
 
   List<VehicleModel> _applyFilters(
-      List<VehicleModel> all, YardVehiclesState s) {
+    List<VehicleModel> all,
+    YardVehiclesState s,
+  ) {
     return all.where((v) {
       if (s.filterMake != null &&
-          (v.make?.toLowerCase() != s.filterMake!.toLowerCase())) return false;
+          (v.make?.toLowerCase() != s.filterMake!.toLowerCase())) {
+        return false;
+      }
       if (s.filterModel != null &&
-          (v.model?.toLowerCase() != s.filterModel!.toLowerCase())) return false;
+          (v.model?.toLowerCase() != s.filterModel!.toLowerCase())) {
+        return false;
+      }
       if (s.filterYear != null && v.year != s.filterYear) return false;
       if (s.filterChassis != null &&
           !(v.serialNumber?.toLowerCase().contains(
-                  s.filterChassis!.toLowerCase()) ??
-              false)) return false;
+                s.filterChassis!.toLowerCase(),
+              ) ??
+              false)) {
+        return false;
+      }
       return true;
     }).toList();
   }
 
   List<String> getDistinct(String Function(VehicleModel) selector) =>
-      state.vehicles
-          .map(selector)
-          .where((s) => s.isNotEmpty)
-          .toSet()
-          .toList()
+      state.vehicles.map(selector).where((s) => s.isNotEmpty).toSet().toList()
         ..sort();
-}
-
-// ── Recent vehicles ───────────────────────────────────────────────────────
-
-class RecentVehiclesNotifier extends StateNotifier<List<VehicleModel>> {
-  final LocalStorage _storage;
-
-  RecentVehiclesNotifier(this._storage)
-      : super(_storage
-            .getRecentVehiclesJson()
-            .map(VehicleModel.fromJson)
-            .toList());
-
-  Future<void> add(Map<String, dynamic> json) async {
-    await _storage.addRecentVehicleJson(json);
-    state = _storage
-        .getRecentVehiclesJson()
-        .map(VehicleModel.fromJson)
-        .toList();
-  }
-
-  Future<void> clear() async {
-    await _storage.clearRecentVehicles();
-    state = [];
-  }
 }
 
 // ── Vehicle detail / image upload ─────────────────────────────────────────
@@ -234,38 +218,35 @@ class VehicleDetailState {
     bool clearError = false,
     String? successMessage,
     bool clearSuccess = false,
-  }) =>
-      VehicleDetailState(
-        vehicle: vehicle ?? this.vehicle,
-        pendingImages: pendingImages ?? this.pendingImages,
-        isUploading: isUploading ?? this.isUploading,
-        error: clearError ? null : (error ?? this.error),
-        successMessage:
-            clearSuccess ? null : (successMessage ?? this.successMessage),
-      );
+  }) => VehicleDetailState(
+    vehicle: vehicle ?? this.vehicle,
+    pendingImages: pendingImages ?? this.pendingImages,
+    isUploading: isUploading ?? this.isUploading,
+    error: clearError ? null : (error ?? this.error),
+    successMessage: clearSuccess
+        ? null
+        : (successMessage ?? this.successMessage),
+  );
 }
 
 class VehicleDetailNotifier extends StateNotifier<VehicleDetailState> {
   final VehicleRemoteDataSource _dataSource;
-  final RecentVehiclesNotifier _recentNotifier;
+  final LocalStorage _storage;
 
   VehicleDetailNotifier({
     required VehicleModel vehicle,
-    required VehicleRemoteDataSource dataSource,
-    required RecentVehiclesNotifier recentNotifier,
-  })  : _dataSource = dataSource,
-        _recentNotifier = recentNotifier,
-        super(VehicleDetailState(vehicle: vehicle)) {
+    required this._dataSource,
+    required this._storage,
+  }) : super(VehicleDetailState(vehicle: vehicle)) {
     _cacheVehicle(vehicle);
   }
 
   void _cacheVehicle(VehicleModel v) {
-    _recentNotifier.add(v.toJson());
+    _storage.addRecentVehicleJson(v.toJson());
   }
 
   void addPendingImages(List<File> files) {
-    state = state.copyWith(
-        pendingImages: [...state.pendingImages, ...files]);
+    state = state.copyWith(pendingImages: [...state.pendingImages, ...files]);
   }
 
   void removePendingImage(int index) {
@@ -293,13 +274,13 @@ class VehicleDetailNotifier extends StateNotifier<VehicleDetailState> {
     } catch (e) {
       state = state.copyWith(
         isUploading: false,
-        error: e.toString().replaceFirst('Exception: ', ''),
+        error: _errorMessage(e),
       );
     }
   }
 
-  void clearMessages() => state =
-      state.copyWith(clearError: true, clearSuccess: true);
+  void clearMessages() =>
+      state = state.copyWith(clearError: true, clearSuccess: true);
 }
 
 // ── Providers ──────────────────────────────────────────────────────────────
@@ -310,28 +291,32 @@ final vehicleDataSourceProvider = Provider<VehicleRemoteDataSource>((ref) {
 
 final vehicleSearchProvider =
     StateNotifierProvider<VehicleSearchNotifier, VehicleSearchState>((ref) {
-  return VehicleSearchNotifier(
-    dataSource: ref.read(vehicleDataSourceProvider),
-  );
-});
+      return VehicleSearchNotifier(
+        dataSource: ref.read(vehicleDataSourceProvider),
+      );
+    });
 
 final yardVehiclesProvider =
     StateNotifierProvider<YardVehiclesNotifier, YardVehiclesState>((ref) {
-  return YardVehiclesNotifier(
-    dataSource: ref.read(vehicleDataSourceProvider),
-  );
-});
+      return YardVehiclesNotifier(
+        dataSource: ref.read(vehicleDataSourceProvider),
+      );
+    });
 
-final recentVehiclesProvider =
-    StateNotifierProvider<RecentVehiclesNotifier, List<VehicleModel>>((ref) {
-  return RecentVehiclesNotifier(ref.read(localStorageProvider));
-});
+final vehicleDetailProvider =
+    StateNotifierProvider.family<
+      VehicleDetailNotifier,
+      VehicleDetailState,
+      VehicleModel
+    >((ref, vehicle) {
+      return VehicleDetailNotifier(
+        vehicle: vehicle,
+        dataSource: ref.read(vehicleDataSourceProvider),
+        storage: ref.read(localStorageProvider),
+      );
+    });
 
-final vehicleDetailProvider = StateNotifierProvider.family<
-    VehicleDetailNotifier, VehicleDetailState, VehicleModel>((ref, vehicle) {
-  return VehicleDetailNotifier(
-    vehicle: vehicle,
-    dataSource: ref.read(vehicleDataSourceProvider),
-    recentNotifier: ref.read(recentVehiclesProvider.notifier),
-  );
+final recentVehiclesProvider = Provider<List<VehicleModel>>((ref) {
+  final storage = ref.read(localStorageProvider);
+  return storage.getRecentVehiclesJson().map(VehicleModel.fromJson).toList();
 });

@@ -27,26 +27,21 @@ class AuthState {
     bool? isLoading,
     String? error,
     bool clearError = false,
-  }) =>
-      AuthState(
-        isLoggedIn: isLoggedIn ?? this.isLoggedIn,
-        user: user ?? this.user,
-        vendor: vendor ?? this.vendor,
-        isLoading: isLoading ?? this.isLoading,
-        error: clearError ? null : (error ?? this.error),
-      );
+  }) => AuthState(
+    isLoggedIn: isLoggedIn ?? this.isLoggedIn,
+    user: user ?? this.user,
+    vendor: vendor ?? this.vendor,
+    isLoading: isLoading ?? this.isLoading,
+    error: clearError ? null : (error ?? this.error),
+  );
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final LocalStorage _storage;
   final AuthRemoteDataSource _dataSource;
 
-  AuthNotifier({
-    required LocalStorage storage,
-    required AuthRemoteDataSource dataSource,
-  })  : _storage = storage,
-        _dataSource = dataSource,
-        super(const AuthState()) {
+  AuthNotifier({required this._storage, required this._dataSource})
+    : super(const AuthState()) {
     _restoreSession();
   }
 

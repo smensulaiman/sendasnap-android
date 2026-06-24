@@ -15,24 +15,42 @@ class VehicleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage =
-        vehicle.images != null && vehicle.images!.isNotEmpty;
+    final hasImage = vehicle.images != null && vehicle.images!.isNotEmpty;
     final imageUrl = hasImage ? vehicle.images!.first : null;
 
-    return Material(
-      color: AppColors.primaryLight,
-      borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-      child: InkWell(
+    return Container(
+      margin: const EdgeInsets.only(bottom: AppDimens.md),
+      decoration: BoxDecoration(
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimens.md),
-          child: Row(
-            children: [
-              _Thumbnail(imageUrl: imageUrl),
-              const Gap(AppDimens.md),
-              Expanded(child: _VehicleInfo(vehicle: vehicle)),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.07),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimens.md),
+            child: Row(
+              children: [
+                _Thumbnail(imageUrl: imageUrl),
+                const Gap(AppDimens.md),
+                Expanded(child: _VehicleInfo(vehicle: vehicle)),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textHint,
+                  size: 20,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -48,11 +66,11 @@ class _Thumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     if (imageUrl != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(AppDimens.sm),
+        borderRadius: BorderRadius.circular(AppDimens.sm + 2),
         child: CachedNetworkImage(
           imageUrl: imageUrl!,
-          width: 60,
-          height: 60,
+          width: 72,
+          height: 72,
           fit: BoxFit.cover,
           errorWidget: (_, __, ___) => _placeholder(),
           placeholder: (_, __) => _placeholder(),
@@ -64,14 +82,17 @@ class _Thumbnail extends StatelessWidget {
 
   Widget _placeholder() {
     return Container(
-      width: 60,
-      height: 60,
+      width: 72,
+      height: 72,
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(AppDimens.sm),
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(AppDimens.sm + 2),
       ),
-      child: const Icon(Icons.directions_car_rounded,
-          color: AppColors.primary, size: 28),
+      child: const Icon(
+        Icons.directions_car_rounded,
+        color: AppColors.primary,
+        size: 32,
+      ),
     );
   }
 }
@@ -84,76 +105,79 @@ class _VehicleInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final make = vehicle.make ?? '—';
     final model = vehicle.model ?? '';
-    final year = vehicle.year ?? '—';
-    final chassis = vehicle.serialNumber ?? '—';
-    final color = vehicle.color ?? '—';
-    final cc = vehicle.cc ?? '—';
+    final year = vehicle.year;
+    final chassis = vehicle.serialNumber;
     final price = vehicle.buyingPrice;
     final imageCount = vehicle.images?.length ?? 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Text(
+          '$make $model'.trim(),
+          style: AppTextStyles.titleMedium,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const Gap(4),
         Row(
           children: [
-            Expanded(
-              child: Text(
-                '$make $model'.trim(),
-                style: AppTextStyles.titleMedium,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
-        const Gap(2),
-        Text(
-          '$make · $year',
-          style: AppTextStyles.bodySmall,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
-          'Chassis: $chassis',
-          style: AppTextStyles.bodySmall,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
-          'Color: $color   CC: $cc',
-          style: AppTextStyles.bodySmall,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const Gap(AppDimens.xs),
-        const Divider(color: AppColors.border, height: 1),
-        const Gap(AppDimens.xs),
-        Row(
-          children: [
-            if (price != null && price.isNotEmpty)
-              Expanded(
-                child: Text(
-                  Formatters.currency(price),
-                  style: AppTextStyles.titleMedium
-                      .copyWith(color: AppColors.primary),
-                ),
-              ),
+            if (year != null) ...[
+              _Badge(label: year, color: AppColors.primary),
+              const Gap(6),
+            ],
             if (imageCount > 0)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.photo_library_outlined,
-                      size: 14, color: AppColors.textSecondary),
-                  const Gap(2),
-                  Text(
-                    '$imageCount',
-                    style: AppTextStyles.labelSmall,
-                  ),
-                ],
+              _Badge(
+                label: '$imageCount photos',
+                color: AppColors.textSecondary,
               ),
           ],
         ),
+        if (chassis != null) ...[
+          const Gap(4),
+          Text(
+            chassis,
+            style: AppTextStyles.monospace.copyWith(fontSize: 11),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+        if (price != null && price.isNotEmpty) ...[
+          const Gap(6),
+          Text(
+            Formatters.currency(price),
+            style: AppTextStyles.titleMedium.copyWith(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
       ],
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  final String label;
+  final Color color;
+  const _Badge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.labelSmall.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
+          fontSize: 10,
+        ),
+      ),
     );
   }
 }

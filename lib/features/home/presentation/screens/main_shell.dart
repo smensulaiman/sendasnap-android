@@ -1,33 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../shared/widgets/connectivity_banner.dart';
 
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   final Widget child;
 
   const MainShell({super.key, required this.child});
 
   static const _tabs = [
     '/main/home',
-    '/main/task',
-    '/main/chat',
+    '/main/vehicles',
     '/main/profile',
+    '/main/more',
   ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).matchedLocation;
     final currentIndex = _tabs.indexWhere((t) => location.startsWith(t));
 
     return Scaffold(
-      body: child,
+      body: Column(
+        children: [
+          const ConnectivityBanner(),
+          Expanded(child: child),
+        ],
+      ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withOpacity(0.06),
+              color: AppColors.textPrimary.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, -2),
             ),
@@ -35,11 +42,9 @@ class MainShell extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _NavItem(
                   icon: Icons.home_rounded,
@@ -48,22 +53,22 @@ class MainShell extends StatelessWidget {
                   onTap: () => context.go('/main/home'),
                 ),
                 _NavItem(
-                  icon: Icons.task_alt_rounded,
-                  label: 'Task',
+                  icon: Icons.directions_car_rounded,
+                  label: 'Vehicles',
                   selected: currentIndex == 1,
-                  onTap: () => context.go('/main/task'),
-                ),
-                _NavItem(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  label: 'Chat',
-                  selected: currentIndex == 2,
-                  onTap: () => context.go('/main/chat'),
+                  onTap: () => context.go('/main/vehicles'),
                 ),
                 _NavItem(
                   icon: Icons.person_rounded,
                   label: 'Profile',
-                  selected: currentIndex == 3,
+                  selected: currentIndex == 2,
                   onTap: () => context.go('/main/profile'),
+                ),
+                _NavItem(
+                  icon: Icons.grid_view_rounded,
+                  label: 'More',
+                  selected: currentIndex == 3,
+                  onTap: () => context.go('/main/more'),
                 ),
               ],
             ),
@@ -97,25 +102,15 @@ class _NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: selected
-              ? AppColors.primaryLight
-              : Colors.transparent,
+          color: selected ? AppColors.primaryLight : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 24),
             const SizedBox(height: 2),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            Text(label, style: AppTextStyles.labelSmall.copyWith(color: color)),
           ],
         ),
       ),

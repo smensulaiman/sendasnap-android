@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +10,6 @@ import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/avatar_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import '../../../vehicle/presentation/providers/vehicle_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -37,22 +35,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.cardRadius)),
-        title: Text(AppStrings.logoutConfirmTitle,
-            style: AppTextStyles.titleLarge),
-        content: Text(AppStrings.logoutConfirmMessage,
-            style: AppTextStyles.bodyMedium),
+          borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+        ),
+        title: Text(
+          AppStrings.logoutConfirmTitle,
+          style: AppTextStyles.titleLarge,
+        ),
+        content: Text(
+          AppStrings.logoutConfirmMessage,
+          style: AppTextStyles.bodyMedium,
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(AppStrings.cancel,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.textSecondary))),
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              AppStrings.cancel,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: Text(AppStrings.confirm,
-                  style: AppTextStyles.bodyMedium
-                      .copyWith(color: AppColors.error))),
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              AppStrings.confirm,
+              style: AppTextStyles.bodyMedium.copyWith(color: AppColors.error),
+            ),
+          ),
         ],
       ),
     );
@@ -97,15 +106,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     size: AppDimens.avatarLarge,
                   ),
                   const Gap(AppDimens.md),
-                  Text(user?.name ?? '—',
-                      style: AppTextStyles.headlineMedium),
+                  Text(user?.name ?? '—', style: AppTextStyles.headlineMedium),
                   const Gap(AppDimens.xs),
                   if (user?.role != null)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimens.md, vertical: 4),
+                        horizontal: AppDimens.md,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.12),
+                        color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -114,8 +124,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
                   const Gap(AppDimens.xs),
-                  Text(user?.email ?? '—',
-                      style: AppTextStyles.bodySmall),
+                  Text(user?.email ?? '—', style: AppTextStyles.bodySmall),
                 ],
               ),
             ),
@@ -123,144 +132,120 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             // Company
             if (vendor != null) ...[
-              _SectionCard(title: 'Company', children: [
-                _InfoRow(label: AppStrings.companyName, value: vendor.name),
-                if (vendor.formattedAddress.isNotEmpty)
-                  _InfoRow(
+              _SectionCard(
+                title: 'Company',
+                children: [
+                  _InfoRow(label: AppStrings.companyName, value: vendor.name),
+                  if (vendor.formattedAddress.isNotEmpty)
+                    _InfoRow(
                       label: AppStrings.address,
-                      value: vendor.formattedAddress),
-              ]),
+                      value: vendor.formattedAddress,
+                    ),
+                ],
+              ),
               const Gap(AppDimens.md),
             ],
 
             // Account Info
-            _SectionCard(title: AppStrings.accountInfo, children: [
-              _InfoRow(label: AppStrings.fullName, value: user?.name),
-              _InfoRow(label: AppStrings.emailLabel, value: user?.email),
-              _InfoRow(label: AppStrings.role, value: user?.role),
-              if (user?.phone != null)
-                _InfoRow(label: AppStrings.phone, value: user!.phone),
-              if (user?.avisId != null)
-                _InfoRow(label: AppStrings.avisId, value: user!.avisId),
-            ]),
+            _SectionCard(
+              title: AppStrings.accountInfo,
+              children: [
+                _InfoRow(label: AppStrings.fullName, value: user?.name),
+                _InfoRow(label: AppStrings.emailLabel, value: user?.email),
+                _InfoRow(label: AppStrings.role, value: user?.role),
+                if (user?.phone != null)
+                  _InfoRow(label: AppStrings.phone, value: user!.phone),
+                if (user?.avisId != null)
+                  _InfoRow(label: AppStrings.avisId, value: user!.avisId),
+              ],
+            ),
             const Gap(AppDimens.md),
 
             // Settings
-            _SectionCard(title: AppStrings.settings, children: [
-              _ToggleRow(
-                label: AppStrings.notifications,
-                icon: Icons.notifications_outlined,
-                value: _notifications,
-                onChanged: (v) {
-                  setState(() => _notifications = v);
-                  ref
-                      .read(authProvider.notifier)
-                      .updateSettings(notifications: v);
-                },
-              ),
-              const Divider(color: AppColors.divider, height: 1),
-              _ToggleRow(
-                label: AppStrings.hapticFeedback,
-                icon: Icons.vibration_rounded,
-                value: _haptic,
-                onChanged: (v) {
-                  setState(() => _haptic = v);
-                  ref
-                      .read(authProvider.notifier)
-                      .updateSettings(haptic: v);
-                },
-              ),
-              const Divider(color: AppColors.divider, height: 1),
-              ListTile(
-                leading: const Icon(Icons.lock_outline_rounded,
-                    color: AppColors.primary, size: 20),
-                title: Text(AppStrings.changePassword,
-                    style: AppTextStyles.bodyMedium),
-                trailing: const Icon(Icons.chevron_right_rounded,
-                    color: AppColors.textSecondary),
-                onTap: () => context.push('/profile/change-password'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ]),
+            _SectionCard(
+              title: AppStrings.settings,
+              children: [
+                _ToggleRow(
+                  label: AppStrings.notifications,
+                  icon: Icons.notifications_outlined,
+                  value: _notifications,
+                  onChanged: (v) {
+                    setState(() => _notifications = v);
+                    ref
+                        .read(authProvider.notifier)
+                        .updateSettings(notifications: v);
+                  },
+                ),
+                const Divider(color: AppColors.divider, height: 1),
+                _ToggleRow(
+                  label: AppStrings.hapticFeedback,
+                  icon: Icons.vibration_rounded,
+                  value: _haptic,
+                  onChanged: (v) {
+                    setState(() => _haptic = v);
+                    ref.read(authProvider.notifier).updateSettings(haptic: v);
+                  },
+                ),
+                const Divider(color: AppColors.divider, height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.lock_outline_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  title: Text(
+                    AppStrings.changePassword,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary,
+                  ),
+                  onTap: () => context.push('/profile/change-password'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ],
+            ),
             const Gap(AppDimens.md),
 
             // Cache
-            _SectionCard(title: AppStrings.cacheSection, children: [
-              ListTile(
-                leading: const Icon(Icons.history_rounded,
-                    color: AppColors.primary, size: 20),
-                title: Text(AppStrings.recentlyViewedVehicles,
-                    style: AppTextStyles.bodyMedium),
-                trailing: Text(
-                  AppStrings.vehiclesCachedLabel(cacheCount),
-                  style: AppTextStyles.bodySmall,
+            _SectionCard(
+              title: AppStrings.cacheSection,
+              children: [
+                ListTile(
+                  leading: const Icon(
+                    Icons.history_rounded,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
+                  title: Text(
+                    AppStrings.recentlyViewedVehicles,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  trailing: Text(
+                    AppStrings.vehiclesCachedLabel(cacheCount),
+                    style: AppTextStyles.bodySmall,
+                  ),
+                  contentPadding: EdgeInsets.zero,
                 ),
-                contentPadding: EdgeInsets.zero,
-              ),
-              const Divider(color: AppColors.divider, height: 1),
-              ListTile(
-                leading: const Icon(Icons.delete_outline_rounded,
-                    color: AppColors.error, size: 20),
-                title: Text(AppStrings.clearCache,
-                    style: AppTextStyles.bodyMedium
-                        .copyWith(color: AppColors.error)),
-                onTap: () => _clearCache(context, storage),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ]),
-            const Gap(AppDimens.md),
-
-            // Admin panel
-            _SectionCard(title: 'Admin Panel', children: [
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-                  onTap: () {
-                    Clipboard.setData(
-                        const ClipboardData(text: 'https://snap.senda.fit/'));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Link copied to clipboard'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppDimens.sm),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.admin_panel_settings_outlined,
-                              color: AppColors.primary, size: 20),
-                        ),
-                        const Gap(AppDimens.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Web Admin Panel',
-                                  style: AppTextStyles.bodyMedium),
-                              Text('https://snap.senda.fit/',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.primary)),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.copy_rounded,
-                            color: AppColors.textSecondary, size: 16),
-                      ],
+                const Divider(color: AppColors.divider, height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
+                  title: Text(
+                    AppStrings.clearCache,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.error,
                     ),
                   ),
+                  onTap: () => _clearCache(context, storage),
+                  contentPadding: EdgeInsets.zero,
                 ),
-              ),
-            ]),
+              ],
+            ),
             const Gap(AppDimens.xxl),
 
             // Logout
@@ -268,8 +253,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               label: AppStrings.logout,
               backgroundColor: AppColors.error,
               onPressed: _logout,
-              icon: const Icon(Icons.logout_rounded,
-                  size: 18, color: AppColors.white),
+              icon: const Icon(
+                Icons.logout_rounded,
+                size: 18,
+                color: AppColors.white,
+              ),
             ),
             const Gap(AppDimens.xxxl),
           ],
@@ -278,29 +266,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Future<void> _clearCache(
-      BuildContext context, LocalStorage storage) async {
+  Future<void> _clearCache(BuildContext context, LocalStorage storage) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppDimens.cardRadius)),
+          borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+        ),
         title: Text('Clear Cache', style: AppTextStyles.titleLarge),
-        content: Text('This will remove all recently viewed vehicles.',
-            style: AppTextStyles.bodyMedium),
+        content: Text(
+          'This will remove all recently viewed vehicles.',
+          style: AppTextStyles.bodyMedium,
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Clear',
-                  style: TextStyle(color: AppColors.error))),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Clear',
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
         ],
       ),
     );
     if (confirm == true) {
-      await ref.read(recentVehiclesProvider.notifier).clear();
+      await storage.clearRecentVehicles();
       if (mounted) setState(() {});
     }
   }
@@ -319,15 +313,22 @@ class _SectionCard extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(
-              left: AppDimens.xs, bottom: AppDimens.sm),
-          child: Text(title, style: AppTextStyles.labelSmall.copyWith(
-            color: AppColors.textSecondary,
-            letterSpacing: 0.5,
-          )),
+            left: AppDimens.xs,
+            bottom: AppDimens.sm,
+          ),
+          child: Text(
+            title,
+            style: AppTextStyles.labelSmall.copyWith(
+              color: AppColors.textSecondary,
+              letterSpacing: 0.5,
+            ),
+          ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppDimens.lg, vertical: AppDimens.xs),
+            horizontal: AppDimens.lg,
+            vertical: AppDimens.xs,
+          ),
           decoration: BoxDecoration(
             color: AppColors.white,
             borderRadius: BorderRadius.circular(AppDimens.cardRadius),
@@ -353,8 +354,9 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-              width: 120,
-              child: Text(label, style: AppTextStyles.bodySmall)),
+            width: 120,
+            child: Text(label, style: AppTextStyles.bodySmall),
+          ),
           Expanded(
             child: Text(
               value?.isNotEmpty == true ? value! : '—',
@@ -389,7 +391,7 @@ class _ToggleRow extends StatelessWidget {
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: AppColors.primary,
+        activeThumbColor: AppColors.primary,
       ),
       contentPadding: EdgeInsets.zero,
     );

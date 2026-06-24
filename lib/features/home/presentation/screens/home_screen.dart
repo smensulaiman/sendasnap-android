@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_dimens.dart';
 import '../../../../core/constants/app_strings.dart';
@@ -28,15 +27,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 700),
-        () => mounted ? setState(() => _showShimmer = false) : null);
-  }
-
-  String get _greeting {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning,';
-    if (h < 17) return 'Good afternoon,';
-    return 'Good evening,';
+    Future.delayed(
+      const Duration(milliseconds: 700),
+      () => mounted ? setState(() => _showShimmer = false) : null,
+    );
   }
 
   void _openSearchSheet(BuildContext context, {bool yardTab = false}) {
@@ -57,118 +51,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.scaffold,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(90),
-        child: Container(
-          color: AppColors.white,
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 4, 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.4),
-                          width: 2),
-                    ),
-                    child: AvatarWidget(
-                      imageUrl: user?.avatarUrl,
-                      name: user?.name.isNotEmpty == true ? user!.name : 'U',
-                      size: 46,
-                    ),
-                  ),
-                  const Gap(12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          _greeting,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        const Gap(1),
-                        Text(
-                          user?.name ?? '—',
-                          style: GoogleFonts.montserrat(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const Gap(4),
-                        Row(
-                          children: [
-                            if (user?.role != null) ...[
-                              _HeaderChip(label: user!.role.toUpperCase()),
-                              const Gap(6),
-                            ],
-                            if (vendor != null)
-                              Flexible(
-                                  child: _HeaderChip(label: vendor.name)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        'assets/images/logo.png',
-                        height: 32,
-                      ),
-                      const Gap(2),
-                      Text(
-                        'SendaSnap',
-                        style: GoogleFonts.montserrat(
-                          fontSize: 8,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textSecondary,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Stack(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.notifications_outlined,
-                            color: AppColors.textPrimary, size: 26),
-                        onPressed: () => context.push(
-                            '/coming-soon',
-                            extra: 'Notifications'),
-                      ),
-                      Positioned(
-                        right: 10,
-                        top: 10,
-                        child: Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFF5252),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+      appBar: AppBar(
+        backgroundColor: AppColors.white,
+        surfaceTintColor: AppColors.white,
+        elevation: 0,
+        title: Text(AppStrings.appName, style: AppTextStyles.appBarTitle),
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.notifications_outlined,
+              color: AppColors.textPrimary,
             ),
+            onPressed: () =>
+                context.push('/coming-soon', extra: 'Notifications'),
           ),
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _openSearchSheet(context),
@@ -187,78 +84,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Greeting card
+              _GreetingCard(
+                name: user?.name ?? '',
+                email: user?.email ?? '',
+                role: user?.role ?? '',
+                avatarUrl: user?.avatarUrl,
+                vendorName: vendor?.name,
+                vendorAddress: vendor?.formattedAddress,
+              ),
+              const Gap(AppDimens.xxl),
+
               // Quick search
-              Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [AppColors.primary, AppColors.primaryDark],
+              Text(AppStrings.quickSearch, style: AppTextStyles.sectionHeader),
+              const Gap(AppDimens.md),
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.search_rounded,
+                      label: AppStrings.searchVehicle,
+                      onTap: () => _openSearchSheet(context),
+                    ),
                   ),
-                  borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
+                  const Gap(AppDimens.md),
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.warehouse_rounded,
+                      label: AppStrings.browseYard,
+                      onTap: () => _openSearchSheet(context, yardTab: true),
                     ),
-                  ],
-                ),
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.manage_search_rounded,
-                            color: Colors.white, size: 20),
-                        const Gap(8),
-                        Text(
-                          AppStrings.quickSearch,
-                          style: GoogleFonts.montserrat(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Gap(4),
-                    Text(
-                      'Find vehicles by ID, chassis or browse the yard',
-                      style: GoogleFonts.montserrat(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                    const Gap(16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickActionCard(
-                            icon: Icons.search_rounded,
-                            label: AppStrings.searchVehicle,
-                            subtitle: 'By ID or chassis',
-                            color: Colors.white,
-                            onTap: () => _openSearchSheet(context),
-                          ),
-                        ),
-                        const Gap(12),
-                        Expanded(
-                          child: _QuickActionCard(
-                            icon: Icons.warehouse_rounded,
-                            label: AppStrings.browseYard,
-                            subtitle: 'View yard stock',
-                            color: const Color(0xFFFFD54F),
-                            onTap: () =>
-                                _openSearchSheet(context, yardTab: true),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const Gap(AppDimens.xxl),
 
@@ -266,26 +123,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(AppStrings.recentlyViewed,
-                      style: AppTextStyles.sectionHeader),
+                  Text(
+                    AppStrings.recentlyViewed,
+                    style: AppTextStyles.sectionHeader,
+                  ),
                   if (recentVehicles.isNotEmpty)
                     TextButton(
-                      onPressed: () =>
-                          _showAllRecent(context, recentVehicles),
-                      child: Text(AppStrings.seeAll,
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.primary)),
+                      onPressed: () => _showAllRecent(context, recentVehicles),
+                      child: Text(
+                        AppStrings.seeAll,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ),
                 ],
               ),
               const Gap(AppDimens.md),
               if (_showShimmer)
                 Column(
-                  children: List.generate(
-                      3, (_) => const ShimmerVehicleCard()),
+                  children: List.generate(3, (_) => const ShimmerVehicleCard()),
                 )
               else if (recentVehicles.isEmpty)
-                EmptyState(
+                const EmptyState(
                   icon: Icons.directions_car_outlined,
                   title: AppStrings.noRecentVehicles,
                   subtitle: AppStrings.noRecentVehiclesSubtitle,
@@ -294,12 +154,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
-                  itemCount:
-                      recentVehicles.length > 5 ? 5 : recentVehicles.length,
+                  itemCount: recentVehicles.length > 5
+                      ? 5
+                      : recentVehicles.length,
                   itemBuilder: (_, i) => VehicleCard(
                     vehicle: recentVehicles[i],
-                    onTap: () => context.push('/vehicles/detail',
-                        extra: recentVehicles[i]),
+                    onTap: () => context.push(
+                      '/vehicles/detail',
+                      extra: recentVehicles[i],
+                    ),
                   ),
                 ),
               const Gap(80),
@@ -310,8 +173,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _showAllRecent(
-      BuildContext context, List<dynamic> recentVehicles) {
+  void _showAllRecent(BuildContext context, List<dynamic> recentVehicles) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -321,30 +183,101 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ── Header chip ───────────────────────────────────────────────────────────
+// ── Greeting card ─────────────────────────────────────────────────────────
 
-class _HeaderChip extends StatelessWidget {
-  final String label;
-  const _HeaderChip({required this.label});
+class _GreetingCard extends StatelessWidget {
+  final String name;
+  final String email;
+  final String role;
+  final String? avatarUrl;
+  final String? vendorName;
+  final String? vendorAddress;
+
+  const _GreetingCard({
+    required this.name,
+    required this.email,
+    required this.role,
+    this.avatarUrl,
+    this.vendorName,
+    this.vendorAddress,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.all(AppDimens.lg),
       decoration: BoxDecoration(
         color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+      ),
+      child: Row(
+        children: [
+          AvatarWidget(
+            imageUrl: avatarUrl,
+            name: name.isNotEmpty ? name : 'U',
+            size: AppDimens.avatarMedium,
+          ),
+          const Gap(AppDimens.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name.isNotEmpty ? '$name san' : 'Welcome',
+                  style: AppTextStyles.titleLarge,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Gap(2),
+                Text(
+                  email,
+                  style: AppTextStyles.bodySmall,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const Gap(AppDimens.xs),
+                Wrap(
+                  spacing: AppDimens.xs,
+                  runSpacing: AppDimens.xs,
+                  children: [
+                    if (role.isNotEmpty) _Chip(label: role.toUpperCase()),
+                    if (vendorName != null) _Chip(label: vendorName!),
+                  ],
+                ),
+                if (vendorAddress != null && vendorAddress!.isNotEmpty) ...[
+                  const Gap(2),
+                  Text(
+                    vendorAddress!,
+                    style: AppTextStyles.labelSmall,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Chip extends StatelessWidget {
+  final String label;
+  const _Chip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.sm,
+        vertical: 2,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(
-        label,
-        style: GoogleFonts.montserrat(
-          fontSize: 9,
-          fontWeight: FontWeight.w600,
-          color: AppColors.primary,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
+      child: Text(label, style: AppTextStyles.chipLabel.copyWith(fontSize: 9)),
     );
   }
 }
@@ -354,67 +287,40 @@ class _HeaderChip extends StatelessWidget {
 class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String subtitle;
-  final Color color;
   final VoidCallback onTap;
 
   const _QuickActionCard({
     required this.icon,
     required this.label,
-    required this.subtitle,
-    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(12),
+      color: AppColors.primaryLight,
+      borderRadius: BorderRadius.circular(AppDimens.cardRadius),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppDimens.cardRadius),
         onTap: onTap,
-        splashColor: Colors.white.withValues(alpha: 0.1),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          child: Row(
+          padding: const EdgeInsets.all(AppDimens.lg),
+          child: Column(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: AppColors.primary, size: 24),
               ),
-              const Gap(10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      label,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.montserrat(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.white.withValues(alpha: 0.65),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
+              const Gap(AppDimens.sm),
+              Text(
+                label,
+                style: AppTextStyles.titleMedium,
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -440,21 +346,23 @@ class _AllRecentSheet extends StatelessWidget {
         decoration: const BoxDecoration(
           color: AppColors.scaffold,
           borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppDimens.bottomSheetRadius)),
+            top: Radius.circular(AppDimens.bottomSheetRadius),
+          ),
         ),
         child: Column(
           children: [
             const _SheetHandle(),
             Padding(
               padding: const EdgeInsets.all(AppDimens.lg),
-              child: Text(AppStrings.recentlyViewed,
-                  style: AppTextStyles.headlineMedium),
+              child: Text(
+                AppStrings.recentlyViewed,
+                style: AppTextStyles.headlineMedium,
+              ),
             ),
             Expanded(
               child: ListView.builder(
                 controller: scrollCtrl,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimens.lg),
+                padding: const EdgeInsets.symmetric(horizontal: AppDimens.lg),
                 itemCount: vehicles.length,
                 itemBuilder: (_, i) => VehicleCard(
                   vehicle: vehicles[i],

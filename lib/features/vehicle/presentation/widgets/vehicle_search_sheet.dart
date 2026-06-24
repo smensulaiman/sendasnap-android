@@ -36,8 +36,7 @@ class VehicleSearchSheet extends ConsumerStatefulWidget {
   const VehicleSearchSheet({super.key, this.initialTab = 0});
 
   @override
-  ConsumerState<VehicleSearchSheet> createState() =>
-      _VehicleSearchSheetState();
+  ConsumerState<VehicleSearchSheet> createState() => _VehicleSearchSheetState();
 }
 
 class _VehicleSearchSheetState extends ConsumerState<VehicleSearchSheet>
@@ -48,7 +47,10 @@ class _VehicleSearchSheetState extends ConsumerState<VehicleSearchSheet>
   void initState() {
     super.initState();
     _tabCtrl = TabController(
-        length: 2, vsync: this, initialIndex: widget.initialTab);
+      length: 2,
+      vsync: this,
+      initialIndex: widget.initialTab,
+    );
   }
 
   @override
@@ -63,7 +65,8 @@ class _VehicleSearchSheetState extends ConsumerState<VehicleSearchSheet>
       decoration: const BoxDecoration(
         color: AppColors.scaffold,
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppDimens.bottomSheetRadius)),
+          top: Radius.circular(AppDimens.bottomSheetRadius),
+        ),
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.65,
@@ -75,14 +78,20 @@ class _VehicleSearchSheetState extends ConsumerState<VehicleSearchSheet>
             const _Handle(),
             Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppDimens.xxl, AppDimens.lg, AppDimens.xxl, 0),
+                AppDimens.xxl,
+                AppDimens.lg,
+                AppDimens.xxl,
+                0,
+              ),
               child: Row(
                 children: [
-                  const Icon(Icons.search_rounded,
-                      color: AppColors.primary, size: 22),
+                  const Icon(
+                    Icons.search_rounded,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
                   const Gap(AppDimens.sm),
-                  Text('Find Vehicle',
-                      style: AppTextStyles.headlineMedium),
+                  Text('Find Vehicle', style: AppTextStyles.headlineMedium),
                 ],
               ),
             ),
@@ -176,7 +185,9 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
   }
 
   void _showVehiclePickerSheet(
-      BuildContext context, List<VehicleModel> vehicles) {
+    BuildContext context,
+    List<VehicleModel> vehicles,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -198,39 +209,48 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Gap(AppDimens.sm),
-            Text(AppStrings.company,
-                style: AppTextStyles.labelSmall
-                    .copyWith(color: AppColors.textSecondary)),
+            Text(
+              AppStrings.company,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             const Gap(AppDimens.xs),
             _DropdownField<String>(
               value: _company,
               items: const [
                 DropdownMenuItem(
-                    value: 'acjl',
-                    child: Text(AppStrings.autocraftJapan)),
+                  value: 'acjl',
+                  child: Text(AppStrings.autocraftJapan),
+                ),
                 DropdownMenuItem(
-                    value: 'karmen',
-                    child: Text(AppStrings.karmen)),
+                  value: 'karmen',
+                  child: Text(AppStrings.karmen),
+                ),
               ],
               onChanged: (v) => setState(() => _company = v ?? 'acjl'),
             ),
             const Gap(AppDimens.lg),
-            Text(AppStrings.searchType,
-                style: AppTextStyles.labelSmall
-                    .copyWith(color: AppColors.textSecondary)),
+            Text(
+              AppStrings.searchType,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             const Gap(AppDimens.xs),
             _DropdownField<String>(
               value: _searchType,
               items: const [
                 DropdownMenuItem(
-                    value: 'vehicle_id',
-                    child: Text(AppStrings.vehicleIdType)),
+                  value: 'vehicle_id',
+                  child: Text(AppStrings.vehicleIdType),
+                ),
                 DropdownMenuItem(
-                    value: 'veh_chassis_number',
-                    child: Text(AppStrings.chassisNumberType)),
+                  value: 'veh_chassis_number',
+                  child: Text(AppStrings.chassisNumberType),
+                ),
               ],
-              onChanged: (v) =>
-                  setState(() => _searchType = v ?? 'vehicle_id'),
+              onChanged: (v) => setState(() => _searchType = v ?? 'vehicle_id'),
             ),
             const Gap(AppDimens.lg),
             TextFormField(
@@ -241,32 +261,35 @@ class _SearchTabState extends ConsumerState<_SearchTab> {
                 labelText: 'Search Query',
                 hintText: AppStrings.searchQueryHint,
                 labelStyle: AppTextStyles.bodySmall,
-                hintStyle: AppTextStyles.bodySmall
-                    .copyWith(color: AppColors.textHint),
-                prefixIcon: const Icon(Icons.search_rounded,
-                    color: AppColors.textSecondary, size: 20),
+                hintStyle: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textHint,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.textSecondary,
+                  size: 20,
+                ),
                 border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimens.inputRadius),
-                  borderSide:
-                      const BorderSide(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(AppDimens.inputRadius),
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimens.inputRadius),
-                  borderSide:
-                      const BorderSide(color: AppColors.border),
+                  borderRadius: BorderRadius.circular(AppDimens.inputRadius),
+                  borderSide: const BorderSide(color: AppColors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppDimens.inputRadius),
+                  borderRadius: BorderRadius.circular(AppDimens.inputRadius),
                   borderSide: const BorderSide(
-                      color: AppColors.primary, width: 1.5),
+                    color: AppColors.primary,
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: AppColors.white,
                 contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppDimens.lg, vertical: AppDimens.md),
+                  horizontal: AppDimens.lg,
+                  vertical: AppDimens.md,
+                ),
               ),
             ),
             const Gap(AppDimens.xxl),
@@ -305,10 +328,9 @@ class _YardTabState extends ConsumerState<_YardTab> {
     if (_selected == null) return;
 
     // Load vehicles first (sheet stays open showing loading state)
-    await ref.read(yardVehiclesProvider.notifier).loadYard(
-          yardId: _selected!.id,
-          company: _selected!.company,
-        );
+    await ref
+        .read(yardVehiclesProvider.notifier)
+        .loadYard(yardId: _selected!.id, company: _selected!.company);
 
     if (!mounted) return;
     final router = GoRouter.of(context);
@@ -317,10 +339,10 @@ class _YardTabState extends ConsumerState<_YardTab> {
 
     // Pop sheet then navigate
     Navigator.of(context).pop();
-    router.push('/vehicles/list', extra: {
-      'yardName': yardName,
-      'company': company,
-    });
+    router.push(
+      '/vehicles/list',
+      extra: {'yardName': yardName, 'company': company},
+    );
   }
 
   @override
@@ -350,8 +372,7 @@ class _YardTabState extends ConsumerState<_YardTab> {
           const Gap(AppDimens.xxl),
           AppButton(
             label: AppStrings.showVehicles,
-            onPressed:
-                (_selected == null || isLoading) ? null : _showVehicles,
+            onPressed: (_selected == null || isLoading) ? null : _showVehicles,
             isLoading: isLoading,
           ),
           const Gap(AppDimens.md),
@@ -390,22 +411,26 @@ class _YardGroup extends StatelessWidget {
             children: [
               const Expanded(child: Divider(color: AppColors.border)),
               Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimens.sm),
-                child: Text(groupName,
-                    style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w700)),
+                padding: const EdgeInsets.symmetric(horizontal: AppDimens.sm),
+                child: Text(
+                  groupName,
+                  style: AppTextStyles.labelSmall.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
               const Expanded(child: Divider(color: AppColors.border)),
             ],
           ),
         ),
-        ...yards.map((yard) => _YardItem(
-              yard: yard,
-              isSelected: selected?.id == yard.id,
-              onTap: () => onSelect(yard),
-            )),
+        ...yards.map(
+          (yard) => _YardItem(
+            yard: yard,
+            isSelected: selected?.id == yard.id,
+            onTap: () => onSelect(yard),
+          ),
+        ),
       ],
     );
   }
@@ -432,14 +457,14 @@ class _YardItem extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: AppDimens.lg, vertical: AppDimens.md),
+            horizontal: AppDimens.lg,
+            vertical: AppDimens.md,
+          ),
           child: Row(
             children: [
               Icon(
                 Icons.warehouse_outlined,
-                color: isSelected
-                    ? AppColors.primary
-                    : AppColors.textSecondary,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
                 size: 20,
               ),
               const Gap(AppDimens.md),
@@ -450,15 +475,16 @@ class _YardItem extends StatelessWidget {
                     color: isSelected
                         ? AppColors.primary
                         : AppColors.textPrimary,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ),
               if (isSelected)
-                const Icon(Icons.check_circle_rounded,
-                    color: AppColors.primary, size: 18),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 18,
+                ),
             ],
           ),
         ),
@@ -479,7 +505,8 @@ class _VehiclePickerSheet extends StatelessWidget {
       decoration: const BoxDecoration(
         color: AppColors.scaffold,
         borderRadius: BorderRadius.vertical(
-            top: Radius.circular(AppDimens.bottomSheetRadius)),
+          top: Radius.circular(AppDimens.bottomSheetRadius),
+        ),
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.6,
@@ -491,26 +518,24 @@ class _VehiclePickerSheet extends StatelessWidget {
             const _Handle(),
             Padding(
               padding: const EdgeInsets.all(AppDimens.lg),
-              child: Text(AppStrings.selectVehicle,
-                  style: AppTextStyles.headlineMedium),
+              child: Text(
+                AppStrings.selectVehicle,
+                style: AppTextStyles.headlineMedium,
+              ),
             ),
             Expanded(
               child: ListView.separated(
                 controller: ctrl,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimens.lg),
+                padding: const EdgeInsets.symmetric(horizontal: AppDimens.lg),
                 itemCount: vehicles.length,
-                separatorBuilder: (_, __) =>
-                    const Gap(AppDimens.sm),
+                separatorBuilder: (_, __) => const Gap(AppDimens.sm),
                 itemBuilder: (_, i) {
                   final v = vehicles[i];
                   return Material(
                     color: AppColors.primaryLight,
-                    borderRadius:
-                        BorderRadius.circular(AppDimens.md),
+                    borderRadius: BorderRadius.circular(AppDimens.md),
                     child: InkWell(
-                      borderRadius:
-                          BorderRadius.circular(AppDimens.md),
+                      borderRadius: BorderRadius.circular(AppDimens.md),
                       onTap: () {
                         Navigator.pop(context);
                         context.push('/vehicles/detail', extra: v);
@@ -519,17 +544,18 @@ class _VehiclePickerSheet extends StatelessWidget {
                         padding: const EdgeInsets.all(AppDimens.md),
                         child: Row(
                           children: [
-                            const Icon(Icons.directions_car_rounded,
-                                color: AppColors.primary, size: 24),
+                            const Icon(
+                              Icons.directions_car_rounded,
+                              color: AppColors.primary,
+                              size: 24,
+                            ),
                             const Gap(AppDimens.md),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${v.make ?? ''} ${v.model ?? ''}'
-                                        .trim(),
+                                    '${v.make ?? ''} ${v.model ?? ''}'.trim(),
                                     style: AppTextStyles.titleMedium,
                                   ),
                                   Text(
@@ -539,8 +565,10 @@ class _VehiclePickerSheet extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            const Icon(Icons.chevron_right_rounded,
-                                color: AppColors.textSecondary),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              color: AppColors.textSecondary,
+                            ),
                           ],
                         ),
                       ),
@@ -562,14 +590,14 @@ class _Handle extends StatelessWidget {
   const _Handle();
   @override
   Widget build(BuildContext context) => Container(
-        margin: const EdgeInsets.only(top: 12),
-        width: 36,
-        height: 4,
-        decoration: BoxDecoration(
-          color: AppColors.border,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      );
+    margin: const EdgeInsets.only(top: 12),
+    width: 36,
+    height: 4,
+    decoration: BoxDecoration(
+      color: AppColors.border,
+      borderRadius: BorderRadius.circular(2),
+    ),
+  );
 }
 
 class _DropdownField<T> extends StatelessWidget {
@@ -586,7 +614,7 @@ class _DropdownField<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      value: value,
+      initialValue: value,
       items: items,
       onChanged: onChanged,
       style: AppTextStyles.bodyMedium,
@@ -603,11 +631,12 @@ class _DropdownField<T> extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.inputRadius),
-          borderSide:
-              const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimens.lg, vertical: AppDimens.md),
+          horizontal: AppDimens.lg,
+          vertical: AppDimens.md,
+        ),
       ),
     );
   }

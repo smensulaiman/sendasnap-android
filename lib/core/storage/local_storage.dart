@@ -6,11 +6,7 @@ class LocalStorage {
   final FlutterSecureStorage _secure;
   final SharedPreferences _prefs;
 
-  LocalStorage({
-    required FlutterSecureStorage secure,
-    required SharedPreferences prefs,
-  })  : _secure = secure,
-        _prefs = prefs;
+  LocalStorage({required this._secure, required this._prefs});
 
   // ── Keys ──────────────────────────────────────────────────────────────────
   static const _keyToken = 'auth_token';

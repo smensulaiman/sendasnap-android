@@ -8,7 +8,7 @@ import '../models/vehicle_model.dart';
 class VehicleRemoteDataSource {
   final DioClient _client;
 
-  VehicleRemoteDataSource({required DioClient client}) : _client = client;
+  VehicleRemoteDataSource({required this._client});
 
   Future<List<VehicleModel>> searchVehicles({
     required String searchType,
@@ -24,19 +24,21 @@ class VehicleRemoteDataSource {
           'company': company,
         },
       );
-      final data = (res.data as Map<String, dynamic>)['data']
-          as Map<String, dynamic>? ?? {};
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>? ??
+          {};
       final companyValue = data['company'] as String? ?? company;
       final list = data['vehicles'] as List? ?? [];
       return list
-          .map((v) => VehicleModel.fromJson(
-                {...(v as Map<String, dynamic>), 'company': companyValue},
-              ))
+          .map(
+            (v) => VehicleModel.fromJson({
+              ...(v as Map<String, dynamic>),
+              'company': companyValue,
+            }),
+          )
           .toList();
     } on DioException catch (e) {
-      throw ServerException(
-          message: _extractMessage(e) ?? 'Search failed',
-          statusCode: e.response?.statusCode);
+      throw _toAppException(e, 'Search failed');
     }
   }
 
@@ -49,18 +51,20 @@ class VehicleRemoteDataSource {
         ApiEndpoints.vehicleYard,
         data: {'yard_id': yardId, 'company': company},
       );
-      final data = (res.data as Map<String, dynamic>)['data']
-          as Map<String, dynamic>? ?? {};
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>? ??
+          {};
       final list = data['vehicles'] as List? ?? [];
       return list
-          .map((v) => VehicleModel.fromJson(
-                {...(v as Map<String, dynamic>), 'company': company},
-              ))
+          .map(
+            (v) => VehicleModel.fromJson({
+              ...(v as Map<String, dynamic>),
+              'company': company,
+            }),
+          )
           .toList();
     } on DioException catch (e) {
-      throw ServerException(
-          message: _extractMessage(e) ?? 'Failed to load yard vehicles',
-          statusCode: e.response?.statusCode);
+      throw _toAppException(e, 'Failed to load yard vehicles');
     }
   }
 
@@ -88,15 +92,32 @@ class VehicleRemoteDataSource {
         data: formData,
         options: Options(contentType: 'multipart/form-data'),
       );
-      final data = (res.data as Map<String, dynamic>)['data']
-          as Map<String, dynamic>? ?? {};
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>? ??
+          {};
       final vehicleData = data['vehicle'] as Map<String, dynamic>? ?? {};
       return VehicleModel.fromJson({...vehicleData, 'company': company});
     } on DioException catch (e) {
-      throw ServerException(
-          message: _extractMessage(e) ?? 'Upload failed',
-          statusCode: e.response?.statusCode);
+      throw _toAppException(e, 'Upload failed');
     }
+  }
+
+  AppException _toAppException(DioException e, String fallback) {
+    final isNetworkError = e.response == null ||
+        e.type == DioExceptionType.connectionError ||
+        e.type == DioExceptionType.connectionTimeout ||
+        e.type == DioExceptionType.receiveTimeout ||
+        e.type == DioExceptionType.sendTimeout;
+
+    if (isNetworkError) {
+      return const NetworkException(
+        message: 'No internet connection. Please check your network.',
+      );
+    }
+    return ServerException(
+      message: _extractMessage(e) ?? fallback,
+      statusCode: e.response?.statusCode,
+    );
   }
 
   String? _extractMessage(DioException e) {
@@ -104,6 +125,6 @@ class VehicleRemoteDataSource {
       final data = e.response?.data;
       if (data is Map<String, dynamic>) return data['message'] as String?;
     } catch (_) {}
-    return e.message;
+    return null;
   }
 }

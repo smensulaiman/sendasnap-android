@@ -33,8 +33,8 @@ class AppStrings {
   static const String quickSearch = 'Quick Search';
   static const String recentlyViewed = 'Recently Viewed';
   static const String seeAll = 'See All';
-  static const String searchVehicle = 'Search Vehicle';
-  static const String browseYard = 'Browse Yard';
+  static const String searchVehicle = 'Search';
+  static const String browseYard = 'Browse';
   static const String noRecentVehicles = 'No recent vehicles';
   static const String noRecentVehiclesSubtitle = 'Search for a vehicle to get started';
 

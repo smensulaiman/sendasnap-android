@@ -6,11 +6,7 @@ class AuthInterceptor extends Interceptor {
   final LocalStorage _storage;
   final void Function() _onUnauthorized;
 
-  AuthInterceptor({
-    required LocalStorage storage,
-    required void Function() onUnauthorized,
-  })  : _storage = storage,
-        _onUnauthorized = onUnauthorized;
+  AuthInterceptor({required this._storage, required this._onUnauthorized});
 
   @override
   Future<void> onRequest(

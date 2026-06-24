@@ -79,8 +79,15 @@ class InfoCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: AppDimens.lg, vertical: AppDimens.sm),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(children: children),
     );
