@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,11 +6,16 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../shared/widgets/connectivity_banner.dart';
 
-class MainShell extends ConsumerWidget {
+class MainShell extends ConsumerStatefulWidget {
   final Widget child;
 
   const MainShell({super.key, required this.child});
 
+  @override
+  ConsumerState<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends ConsumerState<MainShell> {
   static const _tabs = [
     '/main/home',
     '/main/task',
@@ -17,16 +23,41 @@ class MainShell extends ConsumerWidget {
     '/main/profile',
   ];
 
+  int _prevIndex = 0;
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    final currentIndex = _tabs.indexWhere((t) => location.startsWith(t));
+    final rawIndex = _tabs.indexWhere((t) => location.startsWith(t));
+    final currentIndex = rawIndex < 0 ? 0 : rawIndex;
+
+    // Transition direction follows the tab movement: forward (slide left→
+    // right) when going to a later tab, reverse when going back.
+    final reverse = currentIndex < _prevIndex;
+    _prevIndex = currentIndex;
 
     return Scaffold(
       body: Column(
         children: [
           const ConnectivityBanner(),
-          Expanded(child: child),
+          Expanded(
+            child: PageTransitionSwitcher(
+              duration: const Duration(milliseconds: 320),
+              reverse: reverse,
+              transitionBuilder: (child, primary, secondary) =>
+                  SharedAxisTransition(
+                animation: primary,
+                secondaryAnimation: secondary,
+                transitionType: SharedAxisTransitionType.horizontal,
+                fillColor: Colors.transparent,
+                child: child,
+              ),
+              child: KeyedSubtree(
+                key: ValueKey(currentIndex),
+                child: widget.child,
+              ),
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: Container(

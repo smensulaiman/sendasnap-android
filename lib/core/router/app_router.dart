@@ -53,19 +53,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/main/home',
-            builder: (_, __) => const HomeScreen(),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: HomeScreen()),
           ),
           GoRoute(
             path: '/main/task',
-            builder: (_, __) => const ComingSoonScreen(featureName: 'Task'),
+            pageBuilder: (_, __) => const NoTransitionPage(
+                child: ComingSoonScreen(featureName: 'Task')),
           ),
           GoRoute(
             path: '/main/chat',
-            builder: (_, __) => const ComingSoonScreen(featureName: 'Chat'),
+            pageBuilder: (_, __) => const NoTransitionPage(
+                child: ComingSoonScreen(featureName: 'Chat')),
           ),
           GoRoute(
             path: '/main/profile',
-            builder: (_, __) => const ProfileScreen(),
+            pageBuilder: (_, __) =>
+                const NoTransitionPage(child: ProfileScreen()),
           ),
         ],
       ),
