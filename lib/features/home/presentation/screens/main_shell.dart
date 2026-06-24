@@ -32,21 +32,19 @@ class MainShell extends ConsumerWidget {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0D3C6E).withValues(alpha: 0.12),
-              blurRadius: 24,
-              offset: const Offset(0, -6),
+              color: AppColors.textPrimary.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
             ),
           ],
         ),
         child: SafeArea(
-          top: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _NavItem(
                   icon: Icons.home_rounded,
@@ -96,60 +94,23 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = selected ? AppColors.primary : AppColors.textSecondary;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 260),
-        curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: selected ? 18 : 14,
-          vertical: 11,
-        ),
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          gradient: selected
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF1E88E5), AppColors.primary],
-                )
-              : null,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.35),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : null,
+          color: selected ? AppColors.primaryLight : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: selected ? AppColors.white : AppColors.textSecondary,
-              size: 23,
-            ),
-            // Label slides in only for the selected tab
-            AnimatedSize(
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOutCubic,
-              child: selected
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Text(
-                        label,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
-            ),
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 2),
+            Text(label, style: AppTextStyles.labelSmall.copyWith(color: color)),
           ],
         ),
       ),
