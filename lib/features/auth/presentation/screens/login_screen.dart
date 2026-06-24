@@ -18,15 +18,13 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
-  final _emailFocus = FocusNode();
   final _passFocus = FocusNode();
   bool _rememberMe = false;
   bool _isLoading = false;
-  bool _keyboardVisible = false;
 
   late final AnimationController _entryCtrl;
   late final Animation<double> _logoFade;
@@ -36,9 +34,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   void initState() {
     super.initState();
-    _emailFocus.addListener(_onFocusChange);
-    _passFocus.addListener(_onFocusChange);
-
     _entryCtrl = AnimationController(
       duration: const Duration(milliseconds: 900),
       vsync: this,
@@ -62,34 +57,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     _prefill();
   }
 
-  void _onFocusChange() {
-    final anyFocused = _emailFocus.hasFocus || _passFocus.hasFocus;
-    if (anyFocused && !_keyboardVisible) {
-      // Wait for keyboard to fully animate in, then collapse logo section.
-      // After the layout shift re-request focus so the keyboard stays up.
-      final focusedEmail = _emailFocus.hasFocus;
-      Future.delayed(const Duration(milliseconds: 350), () {
-        if (!mounted) return;
-        if (!_emailFocus.hasFocus && !_passFocus.hasFocus) return;
-        setState(() => _keyboardVisible = true);
-        // Re-request focus after the layout rebuilds so keyboard doesn't dismiss
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
-          FocusScope.of(context).requestFocus(
-            focusedEmail ? _emailFocus : _passFocus,
-          );
-        });
-      });
-    } else if (!anyFocused && _keyboardVisible) {
-      // Generous delay: layout re-request above may briefly drop focus
-      Future.delayed(const Duration(milliseconds: 600), () {
-        if (mounted && !_emailFocus.hasFocus && !_passFocus.hasFocus) {
-          setState(() => _keyboardVisible = false);
-        }
-      });
-    }
-  }
-
   Future<void> _prefill() async {
     final storage = ref.read(localStorageProvider);
     if (!storage.isRememberMe()) return;
@@ -102,9 +69,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   void dispose() {
-    _emailFocus.removeListener(_onFocusChange);
-    _passFocus.removeListener(_onFocusChange);
-    _emailFocus.dispose();
     _passFocus.dispose();
     _entryCtrl.dispose();
     _emailCtrl.dispose();
@@ -131,349 +95,300 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.sizeOf(context).height;
     final topPad = MediaQuery.paddingOf(context).top;
-    final keyboardVisible = _keyboardVisible;
 
     return Scaffold(
       backgroundColor: AppColors.primary,
       resizeToAvoidBottomInset: true,
       body: Column(
         children: [
-          // ── Logo / compact header — animates between states ────────
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 280),
-            curve: Curves.easeInOut,
-            height: keyboardVisible ? topPad + 64 : screenHeight * 0.42,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(keyboardVisible ? 0 : 36),
-              ),
-            ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Decorative blobs — only visible in expanded state
-                if (!keyboardVisible) ...[
-                  Positioned(
-                    top: -70,
-                    right: -70,
-                    child: _Blob(size: 220, opacity: 0.07),
+          // ── White logo section — shrinks proportionally with keyboard ──
+          Expanded(
+            flex: 42,
+            child: FadeTransition(
+              opacity: _logoFade,
+              child: Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(36),
                   ),
-                  Positioned(
-                    top: topPad + 30,
-                    left: -50,
-                    child: _Blob(size: 110, opacity: 0.04),
-                  ),
-                ],
-
-                // ── Expanded: big centered logo ──────────────────────
-                AnimatedOpacity(
-                  opacity: keyboardVisible ? 0 : 1,
-                  duration: const Duration(milliseconds: 200),
-                  child: IgnorePointer(
-                    ignoring: keyboardVisible,
-                    child: FadeTransition(
-                      opacity: _logoFade,
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(AppDimens.lg),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(28),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.primary
-                                        .withValues(alpha: 0.10),
-                                    blurRadius: 32,
-                                    spreadRadius: 2,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.04),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: 130,
-                                height: 130,
-                              ),
-                            ),
-                            const Gap(AppDimens.lg),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 20,
-                                  height: 2,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary
-                                        .withValues(alpha: 0.4),
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
+                ),
+                child: Stack(
+                  clipBehavior: Clip.hardEdge,
+                  children: [
+                    Positioned(
+                      top: -70,
+                      right: -70,
+                      child: _Blob(size: 220, opacity: 0.07),
+                    ),
+                    Positioned(
+                      top: topPad + 30,
+                      left: -50,
+                      child: _Blob(size: 110, opacity: 0.04),
+                    ),
+                    Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(AppDimens.lg),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(28),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.primary
+                                      .withValues(alpha: 0.10),
+                                  blurRadius: 32,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 8),
                                 ),
-                                const Gap(AppDimens.sm),
-                                Text(
-                                  AppStrings.tagline,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.primary,
-                                    letterSpacing: 0.4,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const Gap(AppDimens.sm),
-                                Container(
-                                  width: 20,
-                                  height: 2,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary
-                                        .withValues(alpha: 0.4),
-                                    borderRadius: BorderRadius.circular(1),
-                                  ),
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                          ],
-                        ),
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 100,
+                              height: 100,
+                            ),
+                          ),
+                          const Gap(AppDimens.md),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 20,
+                                height: 2,
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                              const Gap(AppDimens.sm),
+                              Text(
+                                AppStrings.tagline,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                  letterSpacing: 0.4,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const Gap(AppDimens.sm),
+                              Container(
+                                width: 20,
+                                height: 2,
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.primary.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-
-                // ── Compact: small logo top-left in AppBar row ────────
-                AnimatedOpacity(
-                  opacity: keyboardVisible ? 1 : 0,
-                  duration: const Duration(milliseconds: 200),
-                  child: IgnorePointer(
-                    ignoring: !keyboardVisible,
-                    child: SafeArea(
-                      bottom: false,
-                      child: SizedBox(
-                        height: 64,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Gap(AppDimens.lg),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: 38,
-                                height: 38,
-                              ),
-                            ),
-                            const Gap(AppDimens.md),
-                            Text(
-                              'Sign in',
-                              style: AppTextStyles.headlineMedium.copyWith(
-                                color: AppColors.textPrimary,
-                                fontSize: 20,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
 
-          // ── Blue form card ─────────────────────────────────────────
+          // ── Blue form card — takes remaining space ─────────────────
           Expanded(
+            flex: 58,
             child: SlideTransition(
               position: _cardSlide,
               child: FadeTransition(
                 opacity: _cardFade,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 280),
-                  curve: Curves.easeInOut,
-                  color: AppColors.primary,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        top: -60, right: -60,
-                        child: Container(
-                          width: 180, height: 180,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.05),
-                          ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: -60,
+                      right: -60,
+                      child: Container(
+                        width: 180,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.05),
                         ),
                       ),
-                      Positioned(
-                        bottom: -40, left: -40,
-                        child: Container(
-                          width: 140, height: 140,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.04),
-                          ),
+                    ),
+                    Positioned(
+                      bottom: -40,
+                      left: -40,
+                      child: Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.04),
                         ),
                       ),
-                      // LayoutBuilder lets us use ConstrainedBox for
-                      // vertical centering inside the scroll view
-                      SafeArea(
-                        top: false,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return SingleChildScrollView(
-                              keyboardDismissBehavior:
-                                  ScrollViewKeyboardDismissBehavior.onDrag,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: AppDimens.xxl),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight),
-                                child: Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    mainAxisAlignment: keyboardVisible
-                                        ? MainAxisAlignment.center
-                                        : MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Header content — hidden when keyboard up
-                                      if (!keyboardVisible) ...[
-                                        const Gap(AppDimens.xxl),
-                                        Center(
-                                          child: Container(
-                                            width: 36, height: 4,
-                                            margin: const EdgeInsets.only(
-                                                bottom: AppDimens.lg),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white
-                                                  .withValues(alpha: 0.3),
-                                              borderRadius:
-                                                  BorderRadius.circular(2),
-                                            ),
-                                          ),
-                                        ),
-                                        Text(
-                                          'Sign in',
-                                          style: AppTextStyles.headlineMedium
-                                              .copyWith(
-                                            color: Colors.white,
-                                            fontSize: 26,
-                                            fontWeight: FontWeight.w800,
-                                          ),
-                                        ),
-                                        const Gap(4),
-                                        Text(
-                                          'Enter your credentials to continue',
-                                          style:
-                                              AppTextStyles.bodySmall.copyWith(
+                    ),
+                    SafeArea(
+                      top: false,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final compact = constraints.maxHeight < 340;
+                          return SingleChildScrollView(
+                            keyboardDismissBehavior:
+                                ScrollViewKeyboardDismissBehavior.onDrag,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: AppDimens.xxl),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight),
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    if (!compact) ...[
+                                      const Gap(AppDimens.xl),
+                                      Center(
+                                        child: Container(
+                                          width: 36,
+                                          height: 4,
+                                          margin: const EdgeInsets.only(
+                                              bottom: AppDimens.lg),
+                                          decoration: BoxDecoration(
                                             color: Colors.white
-                                                .withValues(alpha: 0.7),
+                                                .withValues(alpha: 0.3),
+                                            borderRadius:
+                                                BorderRadius.circular(2),
                                           ),
                                         ),
-                                        const Gap(AppDimens.xxl),
-                                      ],
-
-                                      _WhiteField(
-                                        hint: AppStrings.emailLabel,
-                                        subHint: AppStrings.emailHint,
-                                        controller: _emailCtrl,
-                                        focusNode: _emailFocus,
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        prefixIcon: Icons.email_outlined,
-                                        validator: Validators.email,
-                                        textInputAction: TextInputAction.next,
                                       ),
+                                      Text(
+                                        'Sign in',
+                                        style: AppTextStyles.headlineMedium
+                                            .copyWith(
+                                          color: Colors.white,
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      const Gap(4),
+                                      Text(
+                                        'Enter your credentials to continue',
+                                        style:
+                                            AppTextStyles.bodySmall.copyWith(
+                                          color: Colors.white
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                      ),
+                                      const Gap(AppDimens.xl),
+                                    ] else
                                       const Gap(AppDimens.md),
 
-                                      _WhitePasswordField(
-                                        hint: AppStrings.passwordLabel,
-                                        controller: _passCtrl,
-                                        focusNode: _passFocus,
-                                        validator: Validators.required,
-                                      ),
-                                      const Gap(AppDimens.md),
+                                    _WhiteField(
+                                      hint: AppStrings.emailLabel,
+                                      subHint: AppStrings.emailHint,
+                                      controller: _emailCtrl,
+                                      keyboardType:
+                                          TextInputType.emailAddress,
+                                      prefixIcon: Icons.email_outlined,
+                                      validator: Validators.email,
+                                      textInputAction:
+                                          TextInputAction.next,
+                                      onSubmitted: (_) =>
+                                          FocusScope.of(context)
+                                              .requestFocus(_passFocus),
+                                    ),
+                                    const Gap(AppDimens.md),
 
-                                      _RememberMeRow(
-                                        value: _rememberMe,
-                                        onChanged: (v) => setState(
-                                            () => _rememberMe = v ?? false),
-                                      ),
-                                      const Gap(AppDimens.xxl),
+                                    _WhitePasswordField(
+                                      hint: AppStrings.passwordLabel,
+                                      controller: _passCtrl,
+                                      focusNode: _passFocus,
+                                      validator: Validators.required,
+                                    ),
+                                    const Gap(AppDimens.md),
 
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: AppDimens.buttonHeight,
-                                        child: ElevatedButton(
-                                          onPressed:
-                                              _isLoading ? null : _login,
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: AppColors.primary,
-                                            elevation: 0,
-                                            disabledBackgroundColor:
-                                                Colors.white
-                                                    .withValues(alpha: 0.5),
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                            ),
+                                    _RememberMeRow(
+                                      value: _rememberMe,
+                                      onChanged: (v) => setState(
+                                          () => _rememberMe = v ?? false),
+                                    ),
+                                    const Gap(AppDimens.xl),
+
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: AppDimens.buttonHeight,
+                                      child: ElevatedButton(
+                                        onPressed:
+                                            _isLoading ? null : _login,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor: AppColors.primary,
+                                          elevation: 0,
+                                          disabledBackgroundColor:
+                                              Colors.white
+                                                  .withValues(alpha: 0.5),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(14),
                                           ),
-                                          child: _isLoading
-                                              ? const SizedBox(
-                                                  width: 20, height: 20,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                    strokeWidth: 2,
-                                                    color: AppColors.primary,
-                                                  ),
-                                                )
-                                              : Text(
-                                                  AppStrings.login,
-                                                  style: AppTextStyles
-                                                      .titleMedium
-                                                      .copyWith(
-                                                    color: AppColors.primary,
-                                                    fontWeight: FontWeight.w700,
-                                                    fontSize: 15,
-                                                  ),
+                                        ),
+                                        child: _isLoading
+                                            ? const SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: AppColors.primary,
                                                 ),
+                                              )
+                                            : Text(
+                                                AppStrings.login,
+                                                style: AppTextStyles
+                                                    .titleMedium
+                                                    .copyWith(
+                                                  color: AppColors.primary,
+                                                  fontWeight: FontWeight.w700,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                      ),
+                                    ),
+
+                                    if (!compact) ...[
+                                      const Gap(AppDimens.xxl),
+                                      Center(
+                                        child: Text(
+                                          AppStrings.copyright,
+                                          style: AppTextStyles.labelSmall
+                                              .copyWith(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.4),
+                                          ),
+                                          textAlign: TextAlign.center,
                                         ),
                                       ),
-
-                                      if (!keyboardVisible) ...[
-                                        const Gap(AppDimens.xxl),
-                                        Center(
-                                          child: Text(
-                                            AppStrings.copyright,
-                                            style: AppTextStyles.labelSmall
-                                                .copyWith(
-                                              color: Colors.white
-                                                  .withValues(alpha: 0.4),
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                        const Gap(AppDimens.lg),
-                                      ] else ...[
-                                        const Gap(AppDimens.xxl),
-                                      ],
                                     ],
-                                  ),
+                                    const Gap(AppDimens.lg),
+                                  ],
                                 ),
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          );
+                        },
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -514,7 +429,8 @@ InputDecoration _whiteDecoration({
 }) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+    hintStyle:
+        AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
     helperText: subHint,
     helperStyle:
         AppTextStyles.labelSmall.copyWith(color: AppColors.textHint),
@@ -554,33 +470,35 @@ class _WhiteField extends StatelessWidget {
   final String hint;
   final String? subHint;
   final TextEditingController? controller;
-  final FocusNode? focusNode;
   final TextInputType keyboardType;
   final IconData prefixIcon;
   final String? Function(String?)? validator;
   final TextInputAction textInputAction;
+  final ValueChanged<String>? onSubmitted;
 
   const _WhiteField({
     required this.hint,
     this.subHint,
     this.controller,
-    this.focusNode,
     this.keyboardType = TextInputType.text,
     required this.prefixIcon,
     this.validator,
     this.textInputAction = TextInputAction.next,
+    this.onSubmitted,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      focusNode: focusNode,
       keyboardType: keyboardType,
       validator: validator,
       textInputAction: textInputAction,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
-      decoration: _whiteDecoration(hint: hint, subHint: subHint, prefixIcon: prefixIcon),
+      onFieldSubmitted: onSubmitted,
+      style:
+          AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      decoration: _whiteDecoration(
+          hint: hint, subHint: subHint, prefixIcon: prefixIcon),
     );
   }
 }
@@ -613,13 +531,16 @@ class _WhitePasswordFieldState extends State<_WhitePasswordField> {
       obscureText: _obscure,
       validator: widget.validator,
       textInputAction: TextInputAction.done,
-      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      style:
+          AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
       decoration: _whiteDecoration(
         hint: widget.hint,
         prefixIcon: Icons.lock_outline_rounded,
         suffixIcon: IconButton(
           icon: Icon(
-            _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            _obscure
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             color: AppColors.textSecondary,
             size: 20,
           ),
