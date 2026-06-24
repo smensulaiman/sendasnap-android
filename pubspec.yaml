@@ -1,0 +1,59 @@
+name: senda_snap_flutter
+description: "SendaSnap — Japan's Logistics Companion"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Navigation
+  go_router: ^14.2.7
+
+  # Networking
+  dio: ^5.7.0
+  pretty_dio_logger: ^1.4.0
+
+  # Local storage
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.2
+
+  # Image handling
+  image_picker: ^1.1.2
+  flutter_image_compress: ^2.3.0
+  cached_network_image: ^3.4.1
+  photo_view: ^0.15.0
+
+  # UI / Design
+  google_fonts: ^6.2.1
+  shimmer: ^3.0.0
+  lottie: ^3.1.2
+  flutter_svg: ^2.0.10+1
+  gap: ^3.0.1
+
+  # In-App Update (Android only)
+  in_app_update: ^4.2.3
+
+  # Utilities
+  intl: ^0.19.0
+  connectivity_plus: ^6.1.0
+  permission_handler: ^11.3.1
+  path_provider: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/lottie/
+    - assets/icons/
