@@ -17,7 +17,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
@@ -26,6 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   bool _isLoading = false;
 
   late final AnimationController _entryCtrl;
+  late final AnimationController _bgCtrl;
   late final Animation<double> _fadeAnim;
   late final Animation<Offset> _slideAnim;
 
@@ -33,14 +34,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void initState() {
     super.initState();
     _entryCtrl = AnimationController(
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
+    _bgCtrl = AnimationController(
+      duration: const Duration(seconds: 12),
+      vsync: this,
+    )..repeat(reverse: true);
     _fadeAnim = CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut);
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.06),
+      begin: const Offset(0, 0.10),
       end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut));
+    ).animate(
+        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic));
     _entryCtrl.forward();
     _prefill();
   }
@@ -59,6 +65,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void dispose() {
     _passFocus.dispose();
     _entryCtrl.dispose();
+    _bgCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
@@ -68,10 +75,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _isLoading = true);
     try {
-      await ref
-          .read(authProvider.notifier)
-          .login(_emailCtrl.text.trim(), _passCtrl.text,
-              rememberMe: _rememberMe);
+      await ref.read(authProvider.notifier).login(
+            _emailCtrl.text.trim(),
+            _passCtrl.text,
+            rememberMe: _rememberMe,
+          );
       if (mounted) context.go('/main/home');
     } catch (e) {
       if (mounted) {
@@ -85,222 +93,257 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    // Make status bar icons white over the dark gradient
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        // Match the darkest gradient stop so the scaffold bg itself is never
-        // visible — this is what eliminates the white block at the bottom.
-        backgroundColor: const Color(0xFF0D47A1),
+        backgroundColor: const Color(0xFF0A2472),
         resizeToAvoidBottomInset: true,
         body: SizedBox.expand(
-          child: DecoratedBox(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF1A73E8), Color(0xFF1565C0), Color(0xFF0D47A1)],
-                stops: [0.0, 0.55, 1.0],
+          child: Stack(
+            children: [
+              // ── Layered gradient backdrop ───────────────────────────
+              const DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF1E5BFF),
+                      Color(0xFF1148C8),
+                      Color(0xFF0A2472),
+                    ],
+                    stops: [0.0, 0.5, 1.0],
+                  ),
+                ),
+                child: SizedBox.expand(),
               ),
-            ),
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: SlideTransition(
-                position: _slideAnim,
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      24,
-                      MediaQuery.paddingOf(context).top + 32,
-                      24,
-                      MediaQuery.paddingOf(context).bottom + 24,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // ── Logo + title ─────────────────────────────────
-                        Center(
-                          child: Column(
+
+              // ── Floating decorative orbs ────────────────────────────
+              AnimatedBuilder(
+                animation: _bgCtrl,
+                builder: (context, _) {
+                  final t = _bgCtrl.value;
+                  return Stack(
+                    children: [
+                      Positioned(
+                        top: -100 + t * 30,
+                        right: -80,
+                        child: _Orb(
+                          size: 260,
+                          colors: const [Color(0x554DA3FF), Color(0x00000000)],
+                        ),
+                      ),
+                      Positioned(
+                        top: 140 - t * 40,
+                        left: -110,
+                        child: _Orb(
+                          size: 240,
+                          colors: const [Color(0x4400D4FF), Color(0x00000000)],
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -120 + t * 24,
+                        right: -60,
+                        child: _Orb(
+                          size: 300,
+                          colors: const [Color(0x447B61FF), Color(0x00000000)],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+
+              // ── Content ─────────────────────────────────────────────
+              FadeTransition(
+                opacity: _fadeAnim,
+                child: SlideTransition(
+                  position: _slideAnim,
+                  child: SingleChildScrollView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    child: Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        24,
+                        MediaQuery.paddingOf(context).top + 56,
+                        24,
+                        MediaQuery.paddingOf(context).bottom + 24,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Welcome header
+                          const Text(
+                            'Welcome\nback',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 38,
+                              height: 1.05,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1.0,
+                            ),
+                          ),
+                          const Gap(10),
+                          Text(
+                            AppStrings.tagline,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.72),
+                              fontSize: 14,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+
+                          const Gap(36),
+
+                          // Card with floating logo badge overlapping top
+                          Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.topCenter,
                             children: [
                               Container(
-                                width: 88,
-                                height: 88,
-                                padding: const EdgeInsets.all(12),
+                                margin: const EdgeInsets.only(top: 36),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
+                                  borderRadius: BorderRadius.circular(28),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.22),
-                                      blurRadius: 24,
+                                      color: const Color(0xFF0A2472)
+                                          .withValues(alpha: 0.30),
+                                      blurRadius: 40,
+                                      offset: const Offset(0, 20),
+                                    ),
+                                  ],
+                                ),
+                                padding:
+                                    const EdgeInsets.fromLTRB(24, 52, 24, 28),
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      const Center(
+                                        child: Text(
+                                          'Sign in to continue',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF111827),
+                                          ),
+                                        ),
+                                      ),
+                                      const Gap(24),
+
+                                      _FieldLabel('Email'),
+                                      const Gap(7),
+                                      _InputField(
+                                        hint: AppStrings.emailHint,
+                                        controller: _emailCtrl,
+                                        keyboardType:
+                                            TextInputType.emailAddress,
+                                        prefixIcon: Icons.alternate_email_rounded,
+                                        validator: Validators.email,
+                                        textInputAction: TextInputAction.next,
+                                        onSubmitted: (_) =>
+                                            FocusScope.of(context)
+                                                .requestFocus(_passFocus),
+                                      ),
+                                      const Gap(18),
+
+                                      _FieldLabel('Password'),
+                                      const Gap(7),
+                                      _PasswordField(
+                                        controller: _passCtrl,
+                                        focusNode: _passFocus,
+                                        validator: Validators.required,
+                                      ),
+                                      const Gap(16),
+
+                                      Row(
+                                        children: [
+                                          SizedBox(
+                                            width: 22,
+                                            height: 22,
+                                            child: Checkbox(
+                                              value: _rememberMe,
+                                              onChanged: (v) => setState(() =>
+                                                  _rememberMe = v ?? false),
+                                              activeColor: AppColors.primary,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              side: const BorderSide(
+                                                color: Color(0xFFCBD5E1),
+                                                width: 1.5,
+                                              ),
+                                              materialTapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                            ),
+                                          ),
+                                          const Gap(8),
+                                          const Text(
+                                            'Remember me',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: Color(0xFF64748B),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const Gap(24),
+
+                                      _GradientButton(
+                                        isLoading: _isLoading,
+                                        onPressed: _login,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // Floating logo badge
+                              Container(
+                                width: 72,
+                                height: 72,
+                                padding: const EdgeInsets.all(11),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF0A2472)
+                                          .withValues(alpha: 0.35),
+                                      blurRadius: 20,
                                       offset: const Offset(0, 8),
                                     ),
                                   ],
                                 ),
-                                child: Image.asset('assets/images/logo.png'),
-                              ),
-                              const Gap(16),
-                              Text(
-                                AppStrings.tagline,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 13,
-                                  letterSpacing: 0.4,
-                                ),
+                                child:
+                                    Image.asset('assets/images/logo.png'),
                               ),
                             ],
                           ),
-                        ),
 
-                        const Gap(40),
-
-                        // ── Form card ─────────────────────────────────────
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.15),
-                                blurRadius: 32,
-                                offset: const Offset(0, 12),
+                          const Gap(28),
+                          Center(
+                            child: Text(
+                              AppStrings.copyright,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.white.withValues(alpha: 0.45),
                               ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                const Text(
-                                  'Sign in',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w800,
-                                    color: Color(0xFF1A1A2E),
-                                    letterSpacing: -0.3,
-                                  ),
-                                ),
-                                const Gap(4),
-                                const Text(
-                                  'Welcome back — enter your credentials',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: Color(0xFF6B7280),
-                                  ),
-                                ),
-                                const Gap(24),
-
-                                _FormField(
-                                  label: 'Email',
-                                  hint: AppStrings.emailHint,
-                                  controller: _emailCtrl,
-                                  keyboardType: TextInputType.emailAddress,
-                                  prefixIcon: Icons.email_outlined,
-                                  validator: Validators.email,
-                                  textInputAction: TextInputAction.next,
-                                  onSubmitted: (_) => FocusScope.of(context)
-                                      .requestFocus(_passFocus),
-                                ),
-                                const Gap(16),
-
-                                _PasswordField(
-                                  label: 'Password',
-                                  controller: _passCtrl,
-                                  focusNode: _passFocus,
-                                  validator: Validators.required,
-                                ),
-                                const Gap(14),
-
-                                Row(
-                                  children: [
-                                    SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: Checkbox(
-                                        value: _rememberMe,
-                                        onChanged: (v) => setState(
-                                            () => _rememberMe = v ?? false),
-                                        activeColor: AppColors.primary,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        side: const BorderSide(
-                                          color: Color(0xFFD1D5DB),
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                    ),
-                                    const Gap(8),
-                                    const Text(
-                                      'Remember me',
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF6B7280),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-
-                                const Gap(24),
-
-                                SizedBox(
-                                  height: 50,
-                                  child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _login,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      foregroundColor: Colors.white,
-                                      elevation: 0,
-                                      disabledBackgroundColor:
-                                          AppColors.primary.withValues(alpha: 0.5),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                    ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              color: Colors.white,
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Sign In',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w700,
-                                              letterSpacing: 0.2,
-                                            ),
-                                          ),
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
-                        ),
-
-                        const Gap(24),
-                        Text(
-                          AppStrings.copyright,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            color: Colors.white38,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
         ),
       ),
@@ -308,10 +351,49 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 }
 
-// ── Form field ────────────────────────────────────────────────────────────
+// ── Decorative glowing orb ──────────────────────────────────────────────────
 
-class _FormField extends StatelessWidget {
-  final String label;
+class _Orb extends StatelessWidget {
+  final double size;
+  final List<Color> colors;
+  const _Orb({required this.size, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(colors: colors),
+      ),
+    );
+  }
+}
+
+// ── Field label ─────────────────────────────────────────────────────────────
+
+class _FieldLabel extends StatelessWidget {
+  final String text;
+  const _FieldLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF334155),
+        letterSpacing: 0.1,
+      ),
+    );
+  }
+}
+
+// ── Inputs ──────────────────────────────────────────────────────────────────
+
+class _InputField extends StatelessWidget {
   final String hint;
   final TextEditingController? controller;
   final TextInputType keyboardType;
@@ -320,8 +402,7 @@ class _FormField extends StatelessWidget {
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
 
-  const _FormField({
-    required this.label,
+  const _InputField({
     required this.hint,
     this.controller,
     this.keyboardType = TextInputType.text,
@@ -333,37 +414,24 @@ class _FormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: _labelStyle),
-        const Gap(6),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          validator: validator,
-          textInputAction: textInputAction,
-          onFieldSubmitted: onSubmitted,
-          style: _inputStyle,
-          decoration: _decoration(hint: hint, prefixIcon: prefixIcon),
-        ),
-      ],
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      validator: validator,
+      textInputAction: textInputAction,
+      onFieldSubmitted: onSubmitted,
+      style: _inputStyle,
+      decoration: _decoration(hint: hint, prefixIcon: prefixIcon),
     );
   }
 }
 
 class _PasswordField extends StatefulWidget {
-  final String label;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator;
 
-  const _PasswordField({
-    required this.label,
-    this.controller,
-    this.focusNode,
-    this.validator,
-  });
+  const _PasswordField({this.controller, this.focusNode, this.validator});
 
   @override
   State<_PasswordField> createState() => _PasswordFieldState();
@@ -374,50 +442,100 @@ class _PasswordFieldState extends State<_PasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(widget.label, style: _labelStyle),
-        const Gap(6),
-        TextFormField(
-          controller: widget.controller,
-          focusNode: widget.focusNode,
-          obscureText: _obscure,
-          validator: widget.validator,
-          textInputAction: TextInputAction.done,
-          style: _inputStyle,
-          decoration: _decoration(
-            hint: '••••••••',
-            prefixIcon: Icons.lock_outline_rounded,
-            suffixIcon: GestureDetector(
-              onTap: () => setState(() => _obscure = !_obscure),
-              child: Icon(
-                _obscure
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color: const Color(0xFF9CA3AF),
-                size: 20,
-              ),
-            ),
+    return TextFormField(
+      controller: widget.controller,
+      focusNode: widget.focusNode,
+      obscureText: _obscure,
+      validator: widget.validator,
+      textInputAction: TextInputAction.done,
+      style: _inputStyle,
+      decoration: _decoration(
+        hint: '••••••••',
+        prefixIcon: Icons.lock_outline_rounded,
+        suffixIcon: GestureDetector(
+          onTap: () => setState(() => _obscure = !_obscure),
+          child: Icon(
+            _obscure
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            color: const Color(0xFF94A3B8),
+            size: 20,
           ),
         ),
-      ],
+      ),
     );
   }
 }
 
-// ── Shared styles ─────────────────────────────────────────────────────────
+// ── Gradient button ──────────────────────────────────────────────────────────
 
-const _labelStyle = TextStyle(
-  fontSize: 13,
-  fontWeight: FontWeight.w600,
-  color: Color(0xFF374151),
-  letterSpacing: 0.1,
-);
+class _GradientButton extends StatelessWidget {
+  final bool isLoading;
+  final VoidCallback onPressed;
+  const _GradientButton({required this.isLoading, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: isLoading ? null : onPressed,
+        child: Ink(
+          height: 52,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1E5BFF), Color(0xFF1148C8)],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF1E5BFF).withValues(alpha: 0.40),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Center(
+            child: isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Sign In',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      Gap(8),
+                      Icon(Icons.arrow_forward_rounded,
+                          color: Colors.white, size: 20),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Shared input style ───────────────────────────────────────────────────────
 
 const _inputStyle = TextStyle(
   fontSize: 15,
-  color: Color(0xFF1A1A2E),
+  color: Color(0xFF0F172A),
+  fontWeight: FontWeight.w500,
 );
 
 InputDecoration _decoration({
@@ -425,31 +543,31 @@ InputDecoration _decoration({
   required IconData prefixIcon,
   Widget? suffixIcon,
 }) {
-  const radius = BorderRadius.all(Radius.circular(12));
-  const border = OutlineInputBorder(
+  const radius = BorderRadius.all(Radius.circular(14));
+  const idle = OutlineInputBorder(
     borderRadius: radius,
-    borderSide: BorderSide(color: Color(0xFFE5E7EB)),
+    borderSide: BorderSide(color: Color(0xFFE2E8F0)),
   );
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: Color(0xFFD1D5DB), fontSize: 15),
-    prefixIcon: Icon(prefixIcon, color: Color(0xFF9CA3AF), size: 20),
+    hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 15),
+    prefixIcon: Icon(prefixIcon, color: const Color(0xFF94A3B8), size: 20),
     suffixIcon: suffixIcon != null
         ? Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 14),
             child: suffixIcon,
           )
         : null,
     suffixIconConstraints:
-        const BoxConstraints(minWidth: 44, minHeight: 44),
+        const BoxConstraints(minWidth: 46, minHeight: 46),
     filled: true,
-    fillColor: const Color(0xFFF9FAFB),
+    fillColor: const Color(0xFFF8FAFC),
     floatingLabelBehavior: FloatingLabelBehavior.never,
-    border: border,
-    enabledBorder: border,
+    border: idle,
+    enabledBorder: idle,
     focusedBorder: const OutlineInputBorder(
       borderRadius: radius,
-      borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+      borderSide: BorderSide(color: AppColors.primary, width: 1.6),
     ),
     errorBorder: const OutlineInputBorder(
       borderRadius: radius,
@@ -457,8 +575,8 @@ InputDecoration _decoration({
     ),
     focusedErrorBorder: const OutlineInputBorder(
       borderRadius: radius,
-      borderSide: BorderSide(color: AppColors.error, width: 1.5),
+      borderSide: BorderSide(color: AppColors.error, width: 1.6),
     ),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   );
 }
