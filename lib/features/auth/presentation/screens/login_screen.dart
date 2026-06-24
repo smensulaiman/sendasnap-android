@@ -121,9 +121,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   child: Container(
                     decoration: const BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(36),
-                      ),
                     ),
                     child: Stack(
                       clipBehavior: Clip.hardEdge,
@@ -253,12 +250,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                         SafeArea(
                           top: false,
-                          child: SingleChildScrollView(
-                            // onDrag dismiss: swipe down to close keyboard
+                          child: Builder(
+                            builder: (ctx) {
+                              // Only this Builder rebuilds when keyboard height
+                              // changes — outer layout (logo, column) stays frozen.
+                              final keyboardH =
+                                  MediaQuery.viewInsetsOf(ctx).bottom;
+                              return SingleChildScrollView(
                             keyboardDismissBehavior:
                                 ScrollViewKeyboardDismissBehavior.onDrag,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: AppDimens.xxl),
+                            padding: EdgeInsets.only(
+                                left: AppDimens.xxl,
+                                right: AppDimens.xxl,
+                                bottom: keyboardH + AppDimens.xxl),
                             child: Form(
                               key: _formKey,
                               child: Column(
@@ -377,6 +381,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                 ],
                               ),
                             ),
+                          );
+                            },
                           ),
                         ),
                       ],
