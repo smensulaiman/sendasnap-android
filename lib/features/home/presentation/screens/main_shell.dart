@@ -12,9 +12,9 @@ class MainShell extends ConsumerWidget {
 
   static const _tabs = [
     '/main/home',
-    '/main/vehicles',
+    '/main/task',
+    '/main/chat',
     '/main/profile',
-    '/main/more',
   ];
 
   @override
@@ -53,22 +53,22 @@ class MainShell extends ConsumerWidget {
                   onTap: () => context.go('/main/home'),
                 ),
                 _NavItem(
-                  icon: Icons.directions_car_rounded,
-                  label: 'Vehicles',
+                  icon: Icons.task_alt_rounded,
+                  label: 'Task',
                   selected: currentIndex == 1,
-                  onTap: () => context.go('/main/vehicles'),
+                  onTap: () => context.go('/main/task'),
+                ),
+                _NavItem(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  label: 'Chat',
+                  selected: currentIndex == 2,
+                  onTap: () => context.go('/main/chat'),
                 ),
                 _NavItem(
                   icon: Icons.person_rounded,
                   label: 'Profile',
-                  selected: currentIndex == 2,
-                  onTap: () => context.go('/main/profile'),
-                ),
-                _NavItem(
-                  icon: Icons.grid_view_rounded,
-                  label: 'More',
                   selected: currentIndex == 3,
-                  onTap: () => context.go('/main/more'),
+                  onTap: () => context.go('/main/profile'),
                 ),
               ],
             ),
