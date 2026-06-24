@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import '../../../../core/storage/local_storage.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/avatar_widget.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../vehicle/presentation/providers/vehicle_provider.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -206,6 +208,59 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 contentPadding: EdgeInsets.zero,
               ),
             ]),
+            const Gap(AppDimens.md),
+
+            // Admin panel
+            _SectionCard(title: 'Admin Panel', children: [
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+                  onTap: () {
+                    Clipboard.setData(
+                        const ClipboardData(text: 'https://snap.senda.fit/'));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Link copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: AppDimens.sm),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.admin_panel_settings_outlined,
+                              color: AppColors.primary, size: 20),
+                        ),
+                        const Gap(AppDimens.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Web Admin Panel',
+                                  style: AppTextStyles.bodyMedium),
+                              Text('https://snap.senda.fit/',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.primary)),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.copy_rounded,
+                            color: AppColors.textSecondary, size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ]),
             const Gap(AppDimens.xxl),
 
             // Logout
@@ -245,7 +300,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
     if (confirm == true) {
-      await storage.clearRecentVehicles();
+      await ref.read(recentVehiclesProvider.notifier).clear();
       if (mounted) setState(() {});
     }
   }

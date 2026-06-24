@@ -10,9 +10,9 @@ class MainShell extends StatelessWidget {
 
   static const _tabs = [
     '/main/home',
-    '/main/vehicles',
+    '/main/task',
+    '/main/chat',
     '/main/profile',
-    '/main/more',
   ];
 
   @override
@@ -39,6 +39,7 @@ class MainShell extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _NavItem(
                   icon: Icons.home_rounded,
@@ -47,22 +48,22 @@ class MainShell extends StatelessWidget {
                   onTap: () => context.go('/main/home'),
                 ),
                 _NavItem(
-                  icon: Icons.directions_car_rounded,
-                  label: 'Vehicles',
+                  icon: Icons.task_alt_rounded,
+                  label: 'Task',
                   selected: currentIndex == 1,
-                  onTap: () => context.go('/main/vehicles'),
+                  onTap: () => context.go('/main/task'),
+                ),
+                _NavItem(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  label: 'Chat',
+                  selected: currentIndex == 2,
+                  onTap: () => context.go('/main/chat'),
                 ),
                 _NavItem(
                   icon: Icons.person_rounded,
                   label: 'Profile',
-                  selected: currentIndex == 2,
-                  onTap: () => context.go('/main/profile'),
-                ),
-                _NavItem(
-                  icon: Icons.grid_view_rounded,
-                  label: 'More',
                   selected: currentIndex == 3,
-                  onTap: () => context.go('/main/more'),
+                  onTap: () => context.go('/main/profile'),
                 ),
               ],
             ),
@@ -103,12 +104,17 @@ class _NavItem extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(icon, color: color, size: 24),
             const SizedBox(height: 2),
             Text(
               label,
-              style: AppTextStyles.labelSmall.copyWith(color: color),
+              style: AppTextStyles.labelSmall.copyWith(
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
         ),

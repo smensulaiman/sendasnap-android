@@ -184,6 +184,31 @@ class YardVehiclesNotifier extends StateNotifier<YardVehiclesState> {
         ..sort();
 }
 
+// ── Recent vehicles ───────────────────────────────────────────────────────
+
+class RecentVehiclesNotifier extends StateNotifier<List<VehicleModel>> {
+  final LocalStorage _storage;
+
+  RecentVehiclesNotifier(this._storage)
+      : super(_storage
+            .getRecentVehiclesJson()
+            .map(VehicleModel.fromJson)
+            .toList());
+
+  Future<void> add(Map<String, dynamic> json) async {
+    await _storage.addRecentVehicleJson(json);
+    state = _storage
+        .getRecentVehiclesJson()
+        .map(VehicleModel.fromJson)
+        .toList();
+  }
+
+  Future<void> clear() async {
+    await _storage.clearRecentVehicles();
+    state = [];
+  }
+}
+
 // ── Vehicle detail / image upload ─────────────────────────────────────────
 
 class VehicleDetailState {
@@ -222,20 +247,20 @@ class VehicleDetailState {
 
 class VehicleDetailNotifier extends StateNotifier<VehicleDetailState> {
   final VehicleRemoteDataSource _dataSource;
-  final LocalStorage _storage;
+  final RecentVehiclesNotifier _recentNotifier;
 
   VehicleDetailNotifier({
     required VehicleModel vehicle,
     required VehicleRemoteDataSource dataSource,
-    required LocalStorage storage,
+    required RecentVehiclesNotifier recentNotifier,
   })  : _dataSource = dataSource,
-        _storage = storage,
+        _recentNotifier = recentNotifier,
         super(VehicleDetailState(vehicle: vehicle)) {
     _cacheVehicle(vehicle);
   }
 
   void _cacheVehicle(VehicleModel v) {
-    _storage.addRecentVehicleJson(v.toJson());
+    _recentNotifier.add(v.toJson());
   }
 
   void addPendingImages(List<File> files) {
@@ -297,19 +322,16 @@ final yardVehiclesProvider =
   );
 });
 
+final recentVehiclesProvider =
+    StateNotifierProvider<RecentVehiclesNotifier, List<VehicleModel>>((ref) {
+  return RecentVehiclesNotifier(ref.read(localStorageProvider));
+});
+
 final vehicleDetailProvider = StateNotifierProvider.family<
     VehicleDetailNotifier, VehicleDetailState, VehicleModel>((ref, vehicle) {
   return VehicleDetailNotifier(
     vehicle: vehicle,
     dataSource: ref.read(vehicleDataSourceProvider),
-    storage: ref.read(localStorageProvider),
+    recentNotifier: ref.read(recentVehiclesProvider.notifier),
   );
-});
-
-final recentVehiclesProvider = Provider<List<VehicleModel>>((ref) {
-  final storage = ref.read(localStorageProvider);
-  return storage
-      .getRecentVehiclesJson()
-      .map(VehicleModel.fromJson)
-      .toList();
 });

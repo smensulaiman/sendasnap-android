@@ -9,7 +9,6 @@ import '../../features/home/presentation/screens/main_shell.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/vehicle/presentation/screens/vehicle_list_screen.dart';
 import '../../features/vehicle/presentation/screens/vehicle_detail_screen.dart';
-import '../../features/vehicle/presentation/widgets/vehicle_search_sheet.dart';
 import '../../features/vehicle/data/models/vehicle_model.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/coming_soon/presentation/screens/coming_soon_screen.dart';
@@ -57,18 +56,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const HomeScreen(),
           ),
           GoRoute(
-            path: '/main/vehicles',
-            builder: (_, __) => const _VehiclesTab(),
+            path: '/main/task',
+            builder: (_, __) => const ComingSoonScreen(featureName: 'Task'),
+          ),
+          GoRoute(
+            path: '/main/chat',
+            builder: (_, __) => const ComingSoonScreen(featureName: 'Chat'),
           ),
           GoRoute(
             path: '/main/profile',
             builder: (_, __) => const ProfileScreen(),
-          ),
-          GoRoute(
-            path: '/main/more',
-            builder: (_, __) => const ComingSoonScreen(
-              featureName: 'Tasks, Schedules, Notifications & Chat',
-            ),
           ),
         ],
       ),
@@ -104,30 +101,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// The Vehicles tab shows the search sheet on top of the home screen
-class _VehiclesTab extends StatefulWidget {
-  const _VehiclesTab();
-
-  @override
-  State<_VehiclesTab> createState() => _VehiclesTabState();
-}
-
-class _VehiclesTabState extends State<_VehiclesTab> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        showModalBottomSheet(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.transparent,
-          builder: (_) => const VehicleSearchSheet(),
-        );
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) => const HomeScreen();
-}
