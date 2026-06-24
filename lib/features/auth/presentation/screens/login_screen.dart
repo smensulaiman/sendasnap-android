@@ -20,8 +20,7 @@ class LoginScreen extends ConsumerStatefulWidget {
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends ConsumerState<LoginScreen>
-    with TickerProviderStateMixin {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
@@ -29,35 +28,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   bool _rememberMe = false;
   bool _isLoading = false;
 
-  late final AnimationController _entryCtrl;
-  late final AnimationController _bgCtrl;
-  late final Animation<double> _fadeAnim;
-  late final Animation<Offset> _slideAnim;
-
   @override
   void initState() {
     super.initState();
-    _entryCtrl = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _bgCtrl = AnimationController(
-      duration: const Duration(seconds: 12),
-      vsync: this,
-    )..repeat(reverse: true);
-    _fadeAnim = CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOut);
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.10),
-      end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: _entryCtrl, curve: Curves.easeOutCubic));
-    _entryCtrl.forward();
     _prefill();
   }
 
   Future<void> _prefill() async {
-    // Guarded so the widget preview (which has no real provider overrides)
-    // doesn't throw on startup.
     try {
       final storage = ref.read(localStorageProvider);
       if (!storage.isRememberMe()) return;
@@ -74,8 +51,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   void dispose() {
     _passFocus.dispose();
-    _entryCtrl.dispose();
-    _bgCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
@@ -103,248 +78,238 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final screenH = mq.size.height;
+    final topPad = mq.padding.top;
+    final bottomPad = mq.padding.bottom;
+    final kb = mq.viewInsets.bottom; // keyboard height (animates per-frame)
+
+    // Progress 0 → 1 as the keyboard slides in. Drives the sheet expansion
+    // smoothly without any setState/focus handling — that's the whole trick.
+    final p = kb <= 0 ? 0.0 : (kb / (screenH * 0.36)).clamp(0.0, 1.0);
+
+    // Sheet's top edge: low (≈48%) when closed, near the status bar when open.
+    final collapsedTop = screenH * 0.48;
+    final expandedTop = topPad + 12;
+    final sheetTop = collapsedTop + (expandedTop - collapsedTop) * p;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        backgroundColor: const Color(0xFF071A33),
-        resizeToAvoidBottomInset: true,
-        body: SizedBox.expand(
-          child: Stack(
-            children: [
-              // ── Layered gradient backdrop ───────────────────────────
-              const DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF1565C0),
-                      Color(0xFF0D3C6E),
-                      Color(0xFF071A33),
-                    ],
-                    stops: [0.0, 0.55, 1.0],
-                  ),
+        // Never resize — the sheet positions itself on the keyboard manually.
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            // ── White backdrop with soft blue blobs ────────────────────
+            const Positioned(
+              top: -90,
+              right: -70,
+              child: _Blob(size: 240, color: Color(0x222196F3)),
+            ),
+            const Positioned(
+              top: 60,
+              left: -90,
+              child: _Blob(size: 200, color: Color(0x1442A5F5)),
+            ),
+            const Positioned(
+              top: 260,
+              right: -40,
+              child: _Blob(size: 120, color: Color(0x1A64B5F6)),
+            ),
+
+            // ── Logo in the white area (fades out as keyboard opens) ───
+            Positioned(
+              top: topPad + 48,
+              left: 0,
+              right: 0,
+              child: Opacity(
+                opacity: (1 - p * 1.4).clamp(0.0, 1.0),
+                child: Column(
+                  children: [
+                    Image.asset(
+                      'assets/images/logo.png',
+                      width: 96,
+                      height: 96,
+                    ),
+                    const Gap(14),
+                    Text(
+                      AppStrings.tagline,
+                      style: TextStyle(
+                        color: AppColors.primary.withValues(alpha: 0.65),
+                        fontSize: 13,
+                        letterSpacing: 0.4,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-                child: SizedBox.expand(),
               ),
+            ),
 
-              // ── Floating decorative orbs ────────────────────────────
-              AnimatedBuilder(
-                animation: _bgCtrl,
-                builder: (context, _) {
-                  final t = _bgCtrl.value;
-                  return Stack(
-                    children: [
-                      Positioned(
-                        top: -90 + t * 26,
-                        right: -70,
-                        child: _Orb(
-                          size: 240,
-                          colors: const [Color(0x3360A5FF), Color(0x00000000)],
-                        ),
-                      ),
-                      Positioned(
-                        top: 160 - t * 34,
-                        left: -100,
-                        child: _Orb(
-                          size: 220,
-                          colors: const [Color(0x2A4FC3F7), Color(0x00000000)],
-                        ),
-                      ),
-                      Positioned(
-                        bottom: -110 + t * 22,
-                        right: -50,
-                        child: _Orb(
-                          size: 280,
-                          colors: const [Color(0x2A1E88E5), Color(0x00000000)],
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-
-              // ── Content ─────────────────────────────────────────────
-              FadeTransition(
-                opacity: _fadeAnim,
-                child: SlideTransition(
-                  position: _slideAnim,
+            // ── Blue sheet — bottom edge rests on the keyboard ─────────
+            Positioned(
+              left: 0,
+              right: 0,
+              top: sheetTop,
+              bottom: kb, // sits exactly on top of the keyboard
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x33000000),
+                      blurRadius: 30,
+                      offset: Offset(0, -8),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(32),
+                  ),
                   child: SingleChildScrollView(
                     keyboardDismissBehavior:
                         ScrollViewKeyboardDismissBehavior.onDrag,
-                    child: Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        24,
-                        MediaQuery.paddingOf(context).top + 56,
-                        24,
-                        MediaQuery.paddingOf(context).bottom + 24,
-                      ),
+                    padding: EdgeInsets.fromLTRB(
+                      28,
+                      18,
+                      28,
+                      (kb > 0 ? 24 : bottomPad + 24),
+                    ),
+                    child: Form(
+                      key: _formKey,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Welcome header
+                          // Grab handle
+                          Center(
+                            child: Container(
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                          const Gap(22),
+
                           const Text(
-                            'Welcome\nback',
+                            'Sign in',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 38,
-                              height: 1.05,
+                              fontSize: 26,
                               fontWeight: FontWeight.w800,
-                              letterSpacing: -1.0,
+                              letterSpacing: -0.4,
                             ),
                           ),
-                          const Gap(10),
+                          const Gap(6),
                           Text(
-                            AppStrings.tagline,
+                            'Enter your credentials to continue',
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.72),
+                              color: Colors.white.withValues(alpha: 0.70),
                               fontSize: 14,
-                              letterSpacing: 0.3,
                             ),
                           ),
+                          const Gap(26),
 
-                          const Gap(36),
+                          _WhiteField(
+                            hint: AppStrings.emailLabel,
+                            controller: _emailCtrl,
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.alternate_email_rounded,
+                            validator: Validators.email,
+                            textInputAction: TextInputAction.next,
+                            onSubmitted: (_) => FocusScope.of(context)
+                                .requestFocus(_passFocus),
+                          ),
+                          const Gap(14),
 
-                          // Card with floating logo badge overlapping top
-                          Stack(
-                            clipBehavior: Clip.none,
-                            alignment: Alignment.topCenter,
+                          _WhitePasswordField(
+                            controller: _passCtrl,
+                            focusNode: _passFocus,
+                            validator: Validators.required,
+                          ),
+                          const Gap(16),
+
+                          Row(
                             children: [
-                              Container(
-                                margin: const EdgeInsets.only(top: 36),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(28),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF071A33)
-                                          .withValues(alpha: 0.30),
-                                      blurRadius: 40,
-                                      offset: const Offset(0, 20),
-                                    ),
-                                  ],
-                                ),
-                                padding:
-                                    const EdgeInsets.fromLTRB(24, 52, 24, 28),
-                                child: Form(
-                                  key: _formKey,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      const Center(
-                                        child: Text(
-                                          'Sign in to continue',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF111827),
-                                          ),
-                                        ),
-                                      ),
-                                      const Gap(24),
-
-                                      _FieldLabel('Email'),
-                                      const Gap(7),
-                                      _InputField(
-                                        hint: AppStrings.emailHint,
-                                        controller: _emailCtrl,
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        prefixIcon: Icons.alternate_email_rounded,
-                                        validator: Validators.email,
-                                        textInputAction: TextInputAction.next,
-                                        onSubmitted: (_) =>
-                                            FocusScope.of(context)
-                                                .requestFocus(_passFocus),
-                                      ),
-                                      const Gap(18),
-
-                                      _FieldLabel('Password'),
-                                      const Gap(7),
-                                      _PasswordField(
-                                        controller: _passCtrl,
-                                        focusNode: _passFocus,
-                                        validator: Validators.required,
-                                      ),
-                                      const Gap(16),
-
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                            width: 22,
-                                            height: 22,
-                                            child: Checkbox(
-                                              value: _rememberMe,
-                                              onChanged: (v) => setState(() =>
-                                                  _rememberMe = v ?? false),
-                                              activeColor: AppColors.primary,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(6),
-                                              ),
-                                              side: const BorderSide(
-                                                color: Color(0xFFCBD5E1),
-                                                width: 1.5,
-                                              ),
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                            ),
-                                          ),
-                                          const Gap(8),
-                                          const Text(
-                                            'Remember me',
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color: Color(0xFF64748B),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      const Gap(24),
-
-                                      _GradientButton(
-                                        isLoading: _isLoading,
-                                        onPressed: _login,
-                                      ),
-                                    ],
+                              SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: Checkbox(
+                                  value: _rememberMe,
+                                  onChanged: (v) =>
+                                      setState(() => _rememberMe = v ?? false),
+                                  activeColor: Colors.white,
+                                  checkColor: AppColors.primary,
+                                  side: BorderSide(
+                                    color: Colors.white.withValues(alpha: 0.55),
+                                    width: 1.5,
                                   ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
                                 ),
                               ),
-
-                              // Floating logo badge
-                              Container(
-                                width: 72,
-                                height: 72,
-                                padding: const EdgeInsets.all(11),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF071A33)
-                                          .withValues(alpha: 0.35),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
+                              const Gap(8),
+                              Text(
+                                AppStrings.rememberMe,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 13,
                                 ),
-                                child:
-                                    Image.asset('assets/images/logo.png'),
                               ),
                             ],
                           ),
+                          const Gap(26),
 
-                          const Gap(28),
-                          Center(
-                            child: Text(
-                              AppStrings.copyright,
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.white.withValues(alpha: 0.45),
+                          SizedBox(
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: AppColors.primary,
+                                elevation: 0,
+                                disabledBackgroundColor:
+                                    Colors.white.withValues(alpha: 0.6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
                               ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.2,
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  : const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          'Sign In',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.2,
+                                          ),
+                                        ),
+                                        Gap(8),
+                                        Icon(Icons.arrow_forward_rounded,
+                                            size: 20),
+                                      ],
+                                    ),
                             ),
                           ),
                         ],
@@ -353,57 +318,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-// ── Decorative glowing orb ──────────────────────────────────────────────────
+// ── Soft decorative blob ────────────────────────────────────────────────────
 
-class _Orb extends StatelessWidget {
+class _Blob extends StatelessWidget {
   final double size;
-  final List<Color> colors;
-  const _Orb({required this.size, required this.colors});
+  final Color color;
+  const _Blob({required this.size, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: RadialGradient(colors: colors),
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }
 
-// ── Field label ─────────────────────────────────────────────────────────────
+// ── White inputs ────────────────────────────────────────────────────────────
 
-class _FieldLabel extends StatelessWidget {
-  final String text;
-  const _FieldLabel(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: Color(0xFF334155),
-        letterSpacing: 0.1,
-      ),
-    );
-  }
-}
-
-// ── Inputs ──────────────────────────────────────────────────────────────────
-
-class _InputField extends StatelessWidget {
+class _WhiteField extends StatelessWidget {
   final String hint;
   final TextEditingController? controller;
   final TextInputType keyboardType;
@@ -412,7 +354,7 @@ class _InputField extends StatelessWidget {
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
 
-  const _InputField({
+  const _WhiteField({
     required this.hint,
     this.controller,
     this.keyboardType = TextInputType.text,
@@ -436,18 +378,18 @@ class _InputField extends StatelessWidget {
   }
 }
 
-class _PasswordField extends StatefulWidget {
+class _WhitePasswordField extends StatefulWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator;
 
-  const _PasswordField({this.controller, this.focusNode, this.validator});
+  const _WhitePasswordField({this.controller, this.focusNode, this.validator});
 
   @override
-  State<_PasswordField> createState() => _PasswordFieldState();
+  State<_WhitePasswordField> createState() => _WhitePasswordFieldState();
 }
 
-class _PasswordFieldState extends State<_PasswordField> {
+class _WhitePasswordFieldState extends State<_WhitePasswordField> {
   bool _obscure = true;
 
   @override
@@ -460,7 +402,7 @@ class _PasswordFieldState extends State<_PasswordField> {
       textInputAction: TextInputAction.done,
       style: _inputStyle,
       decoration: _decoration(
-        hint: '••••••••',
+        hint: AppStrings.passwordLabel,
         prefixIcon: Icons.lock_outline_rounded,
         suffixIcon: GestureDetector(
           onTap: () => setState(() => _obscure = !_obscure),
@@ -477,71 +419,6 @@ class _PasswordFieldState extends State<_PasswordField> {
   }
 }
 
-// ── Gradient button ──────────────────────────────────────────────────────────
-
-class _GradientButton extends StatelessWidget {
-  final bool isLoading;
-  final VoidCallback onPressed;
-  const _GradientButton({required this.isLoading, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: isLoading ? null : onPressed,
-        child: Ink(
-          height: 52,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF1565C0).withValues(alpha: 0.42),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Center(
-            child: isLoading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.2,
-                      color: Colors.white,
-                    ),
-                  )
-                : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Sign In',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      Gap(8),
-                      Icon(Icons.arrow_forward_rounded,
-                          color: Colors.white, size: 20),
-                    ],
-                  ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Shared input style ───────────────────────────────────────────────────────
-
 const _inputStyle = TextStyle(
   fontSize: 15,
   color: Color(0xFF0F172A),
@@ -554,30 +431,31 @@ InputDecoration _decoration({
   Widget? suffixIcon,
 }) {
   const radius = BorderRadius.all(Radius.circular(14));
-  const idle = OutlineInputBorder(
-    borderRadius: radius,
-    borderSide: BorderSide(color: Color(0xFFE2E8F0)),
-  );
   return InputDecoration(
     hintText: hint,
-    hintStyle: const TextStyle(color: Color(0xFFCBD5E1), fontSize: 15),
-    prefixIcon: Icon(prefixIcon, color: const Color(0xFF94A3B8), size: 20),
+    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+    prefixIcon: Icon(prefixIcon, color: AppColors.primary, size: 20),
     suffixIcon: suffixIcon != null
         ? Padding(
             padding: const EdgeInsets.only(right: 14),
             child: suffixIcon,
           )
         : null,
-    suffixIconConstraints:
-        const BoxConstraints(minWidth: 46, minHeight: 46),
+    suffixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 46),
     filled: true,
-    fillColor: const Color(0xFFF8FAFC),
+    fillColor: Colors.white,
     floatingLabelBehavior: FloatingLabelBehavior.never,
-    border: idle,
-    enabledBorder: idle,
+    border: const OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: BorderSide.none,
+    ),
+    enabledBorder: const OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: BorderSide.none,
+    ),
     focusedBorder: const OutlineInputBorder(
       borderRadius: radius,
-      borderSide: BorderSide(color: AppColors.primary, width: 1.6),
+      borderSide: BorderSide(color: Color(0xFF0D3C6E), width: 2),
     ),
     errorBorder: const OutlineInputBorder(
       borderRadius: radius,
@@ -585,7 +463,7 @@ InputDecoration _decoration({
     ),
     focusedErrorBorder: const OutlineInputBorder(
       borderRadius: radius,
-      borderSide: BorderSide(color: AppColors.error, width: 1.6),
+      borderSide: BorderSide(color: AppColors.error, width: 2),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
   );
