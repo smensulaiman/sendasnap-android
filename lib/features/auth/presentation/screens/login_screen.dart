@@ -65,16 +65,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void _onFocusChange() {
     final anyFocused = _emailFocus.hasFocus || _passFocus.hasFocus;
     if (anyFocused && !_keyboardVisible) {
-      // Let the keyboard fully animate in (~300ms on iOS) before collapsing
-      // the logo section. This keeps the field stable during the tap so the
-      // keyboard request isn't interrupted by the layout shift.
-      Future.delayed(const Duration(milliseconds: 300), () {
-        if (mounted && (_emailFocus.hasFocus || _passFocus.hasFocus)) {
-          setState(() => _keyboardVisible = true);
-        }
+      // Wait for keyboard to fully animate in, then collapse logo section.
+      // After the layout shift re-request focus so the keyboard stays up.
+      final focusedEmail = _emailFocus.hasFocus;
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (!mounted) return;
+        if (!_emailFocus.hasFocus && !_passFocus.hasFocus) return;
+        setState(() => _keyboardVisible = true);
+        // Re-request focus after the layout rebuilds so keyboard doesn't dismiss
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          FocusScope.of(context).requestFocus(
+            focusedEmail ? _emailFocus : _passFocus,
+          );
+        });
       });
     } else if (!anyFocused && _keyboardVisible) {
-      Future.delayed(const Duration(milliseconds: 350), () {
+      // Generous delay: layout re-request above may briefly drop focus
+      Future.delayed(const Duration(milliseconds: 600), () {
         if (mounted && !_emailFocus.hasFocus && !_passFocus.hasFocus) {
           setState(() => _keyboardVisible = false);
         }
@@ -137,7 +145,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             duration: const Duration(milliseconds: 280),
             curve: Curves.easeInOut,
             height: keyboardVisible ? topPad + 64 : screenHeight * 0.42,
-            color: Colors.white,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(keyboardVisible ? 0 : 36),
+              ),
+            ),
             child: Stack(
               clipBehavior: Clip.none,
               children: [
@@ -283,12 +296,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 280),
                   curve: Curves.easeInOut,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(36),
-                    ),
-                  ),
+                  color: AppColors.primary,
                   child: Stack(
                     children: [
                       Positioned(
