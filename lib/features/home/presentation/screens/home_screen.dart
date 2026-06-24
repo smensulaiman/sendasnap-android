@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
@@ -49,124 +50,122 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final vendor = authState.vendor;
     final recentVehicles = ref.watch(recentVehiclesProvider);
 
-    return Scaffold(
-      backgroundColor: AppColors.scaffold,
-      appBar: AppBar(
-        backgroundColor: AppColors.white,
-        surfaceTintColor: AppColors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.textPrimary,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: AppColors.scaffold,
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _openSearchSheet(context),
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.white,
+          child: const Icon(Icons.search_rounded),
+        ),
+        body: Column(
+          children: [
+            // ── Gradient header ──────────────────────────────────────
+            _GradientHeader(
+              name: user?.name ?? '',
+              email: user?.email ?? '',
+              role: user?.role ?? '',
+              avatarUrl: user?.avatarUrl,
+              vendorName: vendor?.name,
+              vendorAddress: vendor?.formattedAddress,
+              onNotifications: () =>
+                  context.push('/coming-soon', extra: 'Notifications'),
             ),
-            onPressed: () =>
-                context.push('/coming-soon', extra: 'Notifications'),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openSearchSheet(context),
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.white,
-        child: const Icon(Icons.search_rounded),
-      ),
-      body: RefreshIndicator(
-        color: AppColors.primary,
-        onRefresh: () async {
-          setState(() {});
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppDimens.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Greeting card
-              _GreetingCard(
-                name: user?.name ?? '',
-                email: user?.email ?? '',
-                role: user?.role ?? '',
-                avatarUrl: user?.avatarUrl,
-                vendorName: vendor?.name,
-                vendorAddress: vendor?.formattedAddress,
-              ),
-              const Gap(AppDimens.xxl),
 
-              // Quick search
-              Text(AppStrings.quickSearch, style: AppTextStyles.sectionHeader),
-              const Gap(AppDimens.md),
-              Row(
-                children: [
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.search_rounded,
-                      label: AppStrings.searchVehicle,
-                      onTap: () => _openSearchSheet(context),
-                    ),
-                  ),
-                  const Gap(AppDimens.md),
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.warehouse_rounded,
-                      label: AppStrings.browseYard,
-                      onTap: () => _openSearchSheet(context, yardTab: true),
-                    ),
-                  ),
-                ],
-              ),
-              const Gap(AppDimens.xxl),
-
-              // Recent vehicles
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppStrings.recentlyViewed,
-                    style: AppTextStyles.sectionHeader,
-                  ),
-                  if (recentVehicles.isNotEmpty)
-                    TextButton(
-                      onPressed: () => _showAllRecent(context, recentVehicles),
-                      child: Text(
-                        AppStrings.seeAll,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.primary,
-                        ),
+            // ── Scrollable content ───────────────────────────────────
+            Expanded(
+              child: RefreshIndicator(
+                color: AppColors.primary,
+                onRefresh: () async => setState(() {}),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                      AppDimens.lg, AppDimens.lg, AppDimens.lg, 80),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Quick search
+                      Text(AppStrings.quickSearch,
+                          style: AppTextStyles.sectionHeader),
+                      const Gap(AppDimens.md),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.search_rounded,
+                              label: AppStrings.searchVehicle,
+                              onTap: () => _openSearchSheet(context),
+                            ),
+                          ),
+                          const Gap(AppDimens.md),
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: Icons.warehouse_rounded,
+                              label: AppStrings.browseYard,
+                              onTap: () =>
+                                  _openSearchSheet(context, yardTab: true),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                ],
-              ),
-              const Gap(AppDimens.md),
-              if (_showShimmer)
-                Column(
-                  children: List.generate(3, (_) => const ShimmerVehicleCard()),
-                )
-              else if (recentVehicles.isEmpty)
-                const EmptyState(
-                  icon: Icons.directions_car_outlined,
-                  title: AppStrings.noRecentVehicles,
-                  subtitle: AppStrings.noRecentVehiclesSubtitle,
-                )
-              else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: recentVehicles.length > 5
-                      ? 5
-                      : recentVehicles.length,
-                  itemBuilder: (_, i) => VehicleCard(
-                    vehicle: recentVehicles[i],
-                    onTap: () => context.push(
-                      '/vehicles/detail',
-                      extra: recentVehicles[i],
-                    ),
+                      const Gap(AppDimens.xxl),
+
+                      // Recent vehicles
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            AppStrings.recentlyViewed,
+                            style: AppTextStyles.sectionHeader,
+                          ),
+                          if (recentVehicles.isNotEmpty)
+                            TextButton(
+                              onPressed: () =>
+                                  _showAllRecent(context, recentVehicles),
+                              child: Text(
+                                AppStrings.seeAll,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const Gap(AppDimens.md),
+                      if (_showShimmer)
+                        Column(
+                          children: List.generate(
+                              3, (_) => const ShimmerVehicleCard()),
+                        )
+                      else if (recentVehicles.isEmpty)
+                        const EmptyState(
+                          icon: Icons.directions_car_outlined,
+                          title: AppStrings.noRecentVehicles,
+                          subtitle: AppStrings.noRecentVehiclesSubtitle,
+                        )
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: recentVehicles.length > 5
+                              ? 5
+                              : recentVehicles.length,
+                          itemBuilder: (_, i) => VehicleCard(
+                            vehicle: recentVehicles[i],
+                            onTap: () => context.push(
+                              '/vehicles/detail',
+                              extra: recentVehicles[i],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-              const Gap(80),
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -182,20 +181,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ── Greeting card ─────────────────────────────────────────────────────────
+// ── Gradient header ───────────────────────────────────────────────────────
 
-class _GreetingCard extends StatelessWidget {
+class _GradientHeader extends StatelessWidget {
   final String name;
   final String email;
   final String role;
   final String? avatarUrl;
   final String? vendorName;
   final String? vendorAddress;
+  final VoidCallback onNotifications;
 
-  const _GreetingCard({
+  const _GradientHeader({
     required this.name,
     required this.email,
     required this.role,
+    required this.onNotifications,
     this.avatarUrl,
     this.vendorName,
     this.vendorAddress,
@@ -203,80 +204,159 @@ class _GreetingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topPad = MediaQuery.paddingOf(context).top;
     return Container(
-      padding: const EdgeInsets.all(AppDimens.lg),
-      decoration: BoxDecoration(
-        color: AppColors.primaryLight,
-        borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-      ),
-      child: Row(
-        children: [
-          AvatarWidget(
-            imageUrl: avatarUrl,
-            name: name.isNotEmpty ? name : 'U',
-            size: AppDimens.avatarMedium,
+      padding: EdgeInsets.fromLTRB(
+          AppDimens.lg, topPad + AppDimens.md, AppDimens.lg, AppDimens.xl),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E88E5), AppColors.primary, Color(0xFF0D3C6E)],
+          stops: [0.0, 0.55, 1.0],
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x331565C0),
+            blurRadius: 20,
+            offset: Offset(0, 8),
           ),
-          const Gap(AppDimens.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name.isNotEmpty ? '$name san' : 'Welcome',
-                  style: AppTextStyles.titleLarge,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(2.5),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    width: 1.5,
+                  ),
                 ),
-                const Gap(2),
-                Text(
-                  email,
-                  style: AppTextStyles.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                child: AvatarWidget(
+                  imageUrl: avatarUrl,
+                  name: name.isNotEmpty ? name : 'U',
+                  size: AppDimens.avatarMedium,
                 ),
-                const Gap(AppDimens.xs),
-                Wrap(
-                  spacing: AppDimens.xs,
-                  runSpacing: AppDimens.xs,
+              ),
+              const Gap(AppDimens.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (role.isNotEmpty) _Chip(label: role.toUpperCase()),
-                    if (vendorName != null) _Chip(label: vendorName!),
+                    Text(
+                      'Welcome back',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 13,
+                      ),
+                    ),
+                    const Gap(2),
+                    Text(
+                      name.isNotEmpty ? '$name san' : 'Welcome',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-                if (vendorAddress != null && vendorAddress!.isNotEmpty) ...[
-                  const Gap(2),
-                  Text(
+              ),
+              _CircleIconButton(
+                icon: Icons.notifications_outlined,
+                onTap: onNotifications,
+              ),
+            ],
+          ),
+          const Gap(AppDimens.md),
+          Wrap(
+            spacing: AppDimens.xs,
+            runSpacing: AppDimens.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              if (role.isNotEmpty) _GlassChip(label: role.toUpperCase()),
+              if (vendorName != null) _GlassChip(label: vendorName!),
+            ],
+          ),
+          if (vendorAddress != null && vendorAddress!.isNotEmpty) ...[
+            const Gap(AppDimens.sm),
+            Row(
+              children: [
+                Icon(Icons.location_on_outlined,
+                    size: 14, color: Colors.white.withValues(alpha: 0.7)),
+                const Gap(4),
+                Expanded(
+                  child: Text(
                     vendorAddress!,
-                    style: AppTextStyles.labelSmall,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 12,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                ],
+                ),
               ],
             ),
-          ),
+          ],
         ],
       ),
     );
   }
 }
 
-class _Chip extends StatelessWidget {
+class _CircleIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _CircleIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.18),
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Icon(icon, color: Colors.white, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassChip extends StatelessWidget {
   final String label;
-  const _Chip({required this.label});
+  const _GlassChip({required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimens.sm,
-        vertical: 2,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimens.sm, vertical: 3),
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.12),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label, style: AppTextStyles.chipLabel.copyWith(fontSize: 9)),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.3,
+        ),
+      ),
     );
   }
 }
@@ -297,31 +377,51 @@ class _QuickActionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.primaryLight,
+      color: AppColors.white,
       borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimens.lg),
-          child: Column(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+          border: Border.all(color: AppColors.primary.withValues(alpha: 0.08)),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.08),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(AppDimens.lg),
+            child: Column(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1E88E5), AppColors.primary],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: AppColors.white, size: 24),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 24),
-              ),
-              const Gap(AppDimens.sm),
-              Text(
-                label,
-                style: AppTextStyles.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const Gap(AppDimens.sm),
+                Text(
+                  label,
+                  style: AppTextStyles.titleMedium,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),
