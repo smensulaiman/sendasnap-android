@@ -91,8 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               icon: Icons.search_rounded,
                               label: AppStrings.searchVehicle,
                               subtitle: 'By chassis or name',
-                              background: const Color(0xFFE3F0FF),
-                              accent: const Color(0xFF1565C0),
+                              background: const Color(0xFFCFE3FF),
+                              accent: const Color(0xFF1457A8),
                               onTap: () => _openSearchSheet(context),
                             ),
                           ),
@@ -102,8 +102,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               icon: Icons.warehouse_rounded,
                               label: AppStrings.browseYard,
                               subtitle: 'Browse by yard',
-                              background: const Color(0xFFE7F8F0),
-                              accent: const Color(0xFF1B9E6B),
+                              background: const Color(0xFFCFEEDF),
+                              accent: const Color(0xFF12815A),
                               onTap: () =>
                                   _openSearchSheet(context, yardTab: true),
                             ),
@@ -207,7 +207,7 @@ class _GradientHeader extends StatelessWidget {
     final topPad = MediaQuery.paddingOf(context).top;
     return Container(
       padding: EdgeInsets.fromLTRB(
-          AppDimens.lg, topPad + AppDimens.md, AppDimens.lg, AppDimens.xl),
+          AppDimens.lg, topPad + AppDimens.sm, AppDimens.lg, AppDimens.lg),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -215,7 +215,7 @@ class _GradientHeader extends StatelessWidget {
           colors: [Color(0xFF1E88E5), AppColors.primary, Color(0xFF0D3C6E)],
           stops: [0.0, 0.55, 1.0],
         ),
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
             color: Color(0x331565C0),
@@ -241,7 +241,7 @@ class _GradientHeader extends StatelessWidget {
                 child: AvatarWidget(
                   imageUrl: avatarUrl,
                   name: name.isNotEmpty ? name : 'U',
-                  size: AppDimens.avatarMedium,
+                  size: AppDimens.avatarSmall,
                 ),
               ),
               const Gap(AppDimens.md),
@@ -253,15 +253,15 @@ class _GradientHeader extends StatelessWidget {
                       'Welcome back',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.75),
-                        fontSize: 13,
+                        fontSize: 12,
                       ),
                     ),
-                    const Gap(2),
+                    const Gap(1),
                     Text(
                       name.isNotEmpty ? '$name san' : 'Welcome',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.3,
                       ),
@@ -277,7 +277,7 @@ class _GradientHeader extends StatelessWidget {
               ),
             ],
           ),
-          const Gap(AppDimens.md),
+          const Gap(AppDimens.sm),
           Wrap(
             spacing: AppDimens.xs,
             runSpacing: AppDimens.xs,

@@ -94,23 +94,46 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.textSecondary;
+    const duration = Duration(milliseconds: 300);
+    const curve = Curves.easeOutCubic;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: duration,
+        curve: curve,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: selected ? AppColors.primaryLight : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 2),
-            Text(label, style: AppTextStyles.labelSmall.copyWith(color: color)),
+            // Icon scales up + colour cross-fades smoothly on selection
+            AnimatedScale(
+              scale: selected ? 1.15 : 1.0,
+              duration: duration,
+              curve: Curves.easeOutBack,
+              child: TweenAnimationBuilder<Color?>(
+                duration: duration,
+                curve: curve,
+                tween: ColorTween(
+                  end: selected ? AppColors.primary : AppColors.textSecondary,
+                ),
+                builder: (_, color, __) => Icon(icon, color: color, size: 24),
+              ),
+            ),
+            const SizedBox(height: 3),
+            AnimatedDefaultTextStyle(
+              duration: duration,
+              curve: curve,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: selected ? AppColors.primary : AppColors.textSecondary,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+              child: Text(label),
+            ),
           ],
         ),
       ),
