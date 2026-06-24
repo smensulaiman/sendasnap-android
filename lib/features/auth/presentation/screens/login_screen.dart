@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
@@ -8,6 +9,9 @@ import '../../../../core/constants/app_strings.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../shared/widgets/app_snackbar.dart';
 import '../providers/auth_provider.dart';
+
+@Preview(name: 'Login screen')
+Widget loginPreview() => const ProviderScope(child: LoginScreen());
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -52,13 +56,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 
   Future<void> _prefill() async {
-    final storage = ref.read(localStorageProvider);
-    if (!storage.isRememberMe()) return;
-    final email = storage.getSavedEmail();
-    final pass = await storage.getSavedPassword();
-    if (email != null) _emailCtrl.text = email;
-    if (pass != null) _passCtrl.text = pass;
-    setState(() => _rememberMe = true);
+    // Guarded so the widget preview (which has no real provider overrides)
+    // doesn't throw on startup.
+    try {
+      final storage = ref.read(localStorageProvider);
+      if (!storage.isRememberMe()) return;
+      final email = storage.getSavedEmail();
+      final pass = await storage.getSavedPassword();
+      if (email != null) _emailCtrl.text = email;
+      if (pass != null) _passCtrl.text = pass;
+      if (mounted) setState(() => _rememberMe = true);
+    } catch (_) {
+      // No-op in preview / uninitialised storage.
+    }
   }
 
   @override
@@ -96,7 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0A2472),
+        backgroundColor: const Color(0xFF071A33),
         resizeToAvoidBottomInset: true,
         body: SizedBox.expand(
           child: Stack(
@@ -105,14 +115,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               const DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xFF1E5BFF),
-                      Color(0xFF1148C8),
-                      Color(0xFF0A2472),
+                      Color(0xFF1565C0),
+                      Color(0xFF0D3C6E),
+                      Color(0xFF071A33),
                     ],
-                    stops: [0.0, 0.5, 1.0],
+                    stops: [0.0, 0.55, 1.0],
                   ),
                 ),
                 child: SizedBox.expand(),
@@ -126,27 +136,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   return Stack(
                     children: [
                       Positioned(
-                        top: -100 + t * 30,
-                        right: -80,
-                        child: _Orb(
-                          size: 260,
-                          colors: const [Color(0x554DA3FF), Color(0x00000000)],
-                        ),
-                      ),
-                      Positioned(
-                        top: 140 - t * 40,
-                        left: -110,
+                        top: -90 + t * 26,
+                        right: -70,
                         child: _Orb(
                           size: 240,
-                          colors: const [Color(0x4400D4FF), Color(0x00000000)],
+                          colors: const [Color(0x3360A5FF), Color(0x00000000)],
                         ),
                       ),
                       Positioned(
-                        bottom: -120 + t * 24,
-                        right: -60,
+                        top: 160 - t * 34,
+                        left: -100,
                         child: _Orb(
-                          size: 300,
-                          colors: const [Color(0x447B61FF), Color(0x00000000)],
+                          size: 220,
+                          colors: const [Color(0x2A4FC3F7), Color(0x00000000)],
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -110 + t * 22,
+                        right: -50,
+                        child: _Orb(
+                          size: 280,
+                          colors: const [Color(0x2A1E88E5), Color(0x00000000)],
                         ),
                       ),
                     ],
@@ -207,7 +217,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   borderRadius: BorderRadius.circular(28),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF0A2472)
+                                      color: const Color(0xFF071A33)
                                           .withValues(alpha: 0.30),
                                       blurRadius: 40,
                                       offset: const Offset(0, 20),
@@ -314,7 +324,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: const Color(0xFF0A2472)
+                                      color: const Color(0xFF071A33)
                                           .withValues(alpha: 0.35),
                                       blurRadius: 20,
                                       offset: const Offset(0, 8),
@@ -486,11 +496,11 @@ class _GradientButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             gradient: const LinearGradient(
-              colors: [Color(0xFF1E5BFF), Color(0xFF1148C8)],
+              colors: [Color(0xFF1E88E5), Color(0xFF1565C0)],
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF1E5BFF).withValues(alpha: 0.40),
+                color: const Color(0xFF1565C0).withValues(alpha: 0.42),
                 blurRadius: 16,
                 offset: const Offset(0, 8),
               ),
