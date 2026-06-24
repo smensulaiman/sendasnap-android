@@ -209,12 +209,7 @@ class _GradientHeader extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(
           AppDimens.lg, topPad + AppDimens.sm, AppDimens.lg, AppDimens.lg),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1E88E5), AppColors.primary, Color(0xFF0D3C6E)],
-          stops: [0.0, 0.55, 1.0],
-        ),
+        color: AppColors.primary,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
           BoxShadow(

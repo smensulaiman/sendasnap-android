@@ -32,45 +32,76 @@ class MainShell extends ConsumerWidget {
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.textPrimary.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, -2),
+              color: const Color(0xFF0D3C6E).withValues(alpha: 0.10),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
           ],
         ),
         child: SafeArea(
+          top: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _NavItem(
-                  icon: Icons.home_rounded,
-                  label: 'Home',
-                  selected: currentIndex == 0,
-                  onTap: () => context.go('/main/home'),
-                ),
-                _NavItem(
-                  icon: Icons.task_alt_rounded,
-                  label: 'Task',
-                  selected: currentIndex == 1,
-                  onTap: () => context.go('/main/task'),
-                ),
-                _NavItem(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  label: 'Chat',
-                  selected: currentIndex == 2,
-                  onTap: () => context.go('/main/chat'),
-                ),
-                _NavItem(
-                  icon: Icons.person_rounded,
-                  label: 'Profile',
-                  selected: currentIndex == 3,
-                  onTap: () => context.go('/main/profile'),
-                ),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: SizedBox(
+              height: 56,
+              child: Stack(
+                children: [
+                  // Sliding light-blue background that moves to the selected tab
+                  if (currentIndex >= 0)
+                    AnimatedAlign(
+                      alignment: Alignment(
+                        _tabs.length == 1
+                            ? 0
+                            : -1 + 2 * currentIndex / (_tabs.length - 1),
+                        0,
+                      ),
+                      duration: const Duration(milliseconds: 320),
+                      curve: Curves.easeOutCubic,
+                      child: FractionallySizedBox(
+                        widthFactor: 1 / _tabs.length,
+                        heightFactor: 1,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryLight,
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                      ),
+                    ),
+                  Row(
+                    children: [
+                      _NavItem(
+                        icon: Icons.home_outlined,
+                        label: 'Home',
+                        selected: currentIndex == 0,
+                        onTap: () => context.go('/main/home'),
+                      ),
+                      _NavItem(
+                        icon: Icons.task_alt_outlined,
+                        label: 'Task',
+                        selected: currentIndex == 1,
+                        onTap: () => context.go('/main/task'),
+                      ),
+                      _NavItem(
+                        icon: Icons.chat_bubble_outline_rounded,
+                        label: 'Chat',
+                        selected: currentIndex == 2,
+                        onTap: () => context.go('/main/chat'),
+                      ),
+                      _NavItem(
+                        icon: Icons.person_outline_rounded,
+                        label: 'Profile',
+                        selected: currentIndex == 3,
+                        onTap: () => context.go('/main/profile'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -96,19 +127,12 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     const duration = Duration(milliseconds: 300);
     const curve = Curves.easeOutCubic;
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: duration,
-        curve: curve,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primaryLight : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
-        ),
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Icon scales up + colour cross-fades smoothly on selection
             AnimatedScale(
