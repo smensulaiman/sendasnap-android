@@ -65,7 +65,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   void _onFocusChange() {
     final anyFocused = _emailFocus.hasFocus || _passFocus.hasFocus;
     if (anyFocused && !_keyboardVisible) {
-      setState(() => _keyboardVisible = true);
+      // Defer layout change to next frame so iOS can register the tap
+      // and request the keyboard before the layout shifts
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && (_emailFocus.hasFocus || _passFocus.hasFocus)) {
+          setState(() => _keyboardVisible = true);
+        }
+      });
     } else if (!anyFocused && _keyboardVisible) {
       // Wait for keyboard dismiss animation before reverting layout
       Future.delayed(const Duration(milliseconds: 350), () {
@@ -122,7 +128,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final keyboardVisible = _keyboardVisible;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.primary,
       resizeToAvoidBottomInset: true,
       body: Column(
         children: [
