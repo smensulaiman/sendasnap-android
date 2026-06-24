@@ -22,8 +22,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   final _formKey = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _passFocus = FocusNode();
   bool _rememberMe = false;
   bool _isLoading = false;
+  bool _keyboardVisible = false;
 
   late final AnimationController _entryCtrl;
   late final Animation<double> _logoFade;
@@ -33,6 +36,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   void initState() {
     super.initState();
+    _emailFocus.addListener(_onFocusChange);
+    _passFocus.addListener(_onFocusChange);
+
     _entryCtrl = AnimationController(
       duration: const Duration(milliseconds: 900),
       vsync: this,
@@ -56,6 +62,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     _prefill();
   }
 
+  void _onFocusChange() {
+    final anyFocused = _emailFocus.hasFocus || _passFocus.hasFocus;
+    if (anyFocused && !_keyboardVisible) {
+      setState(() => _keyboardVisible = true);
+    } else if (!anyFocused && _keyboardVisible) {
+      // Wait for keyboard dismiss animation before reverting layout
+      Future.delayed(const Duration(milliseconds: 350), () {
+        if (mounted && !_emailFocus.hasFocus && !_passFocus.hasFocus) {
+          setState(() => _keyboardVisible = false);
+        }
+      });
+    }
+  }
+
   Future<void> _prefill() async {
     final storage = ref.read(localStorageProvider);
     if (!storage.isRememberMe()) return;
@@ -68,6 +88,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   void dispose() {
+    _emailFocus.removeListener(_onFocusChange);
+    _passFocus.removeListener(_onFocusChange);
+    _emailFocus.dispose();
+    _passFocus.dispose();
     _entryCtrl.dispose();
     _emailCtrl.dispose();
     _passCtrl.dispose();
@@ -95,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.sizeOf(context).height;
     final topPad = MediaQuery.paddingOf(context).top;
-    final keyboardVisible = MediaQuery.viewInsetsOf(context).bottom > 80;
+    final keyboardVisible = _keyboardVisible;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -345,6 +369,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                         hint: AppStrings.emailLabel,
                                         subHint: AppStrings.emailHint,
                                         controller: _emailCtrl,
+                                        focusNode: _emailFocus,
                                         keyboardType:
                                             TextInputType.emailAddress,
                                         prefixIcon: Icons.email_outlined,
@@ -356,6 +381,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       _WhitePasswordField(
                                         hint: AppStrings.passwordLabel,
                                         controller: _passCtrl,
+                                        focusNode: _passFocus,
                                         validator: Validators.required,
                                       ),
                                       const Gap(AppDimens.md),
@@ -514,6 +540,7 @@ class _WhiteField extends StatelessWidget {
   final String hint;
   final String? subHint;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final TextInputType keyboardType;
   final IconData prefixIcon;
   final String? Function(String?)? validator;
@@ -523,6 +550,7 @@ class _WhiteField extends StatelessWidget {
     required this.hint,
     this.subHint,
     this.controller,
+    this.focusNode,
     this.keyboardType = TextInputType.text,
     required this.prefixIcon,
     this.validator,
@@ -533,6 +561,7 @@ class _WhiteField extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      focusNode: focusNode,
       keyboardType: keyboardType,
       validator: validator,
       textInputAction: textInputAction,
@@ -545,11 +574,13 @@ class _WhiteField extends StatelessWidget {
 class _WhitePasswordField extends StatefulWidget {
   final String hint;
   final TextEditingController? controller;
+  final FocusNode? focusNode;
   final String? Function(String?)? validator;
 
   const _WhitePasswordField({
     required this.hint,
     this.controller,
+    this.focusNode,
     this.validator,
   });
 
@@ -564,6 +595,7 @@ class _WhitePasswordFieldState extends State<_WhitePasswordField> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: widget.controller,
+      focusNode: widget.focusNode,
       obscureText: _obscure,
       validator: widget.validator,
       textInputAction: TextInputAction.done,
