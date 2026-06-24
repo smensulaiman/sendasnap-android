@@ -19,22 +19,18 @@ class ConnectivityBanner extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isOnline = ref.watch(_connectivityProvider).valueOrNull ?? true;
 
-    return AnimatedSlide(
-      offset: isOnline ? const Offset(0, -1) : Offset.zero,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      child: AnimatedOpacity(
-        opacity: isOnline ? 0 : 1,
-        duration: const Duration(milliseconds: 300),
+    // Collapse to zero height when online so it reserves no space (no white
+    // strip over the status bar). Animates open/closed when connectivity flips.
+    return ClipRect(
+      child: AnimatedAlign(
+        alignment: Alignment.bottomCenter,
+        heightFactor: isOnline ? 0.0 : 1.0,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeInOut,
         child: Container(
           width: double.infinity,
           color: const Color(0xFFB71C1C),
-          padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top > 0 ? 4 : 6,
-            bottom: 6,
-            left: 16,
-            right: 16,
-          ),
+          padding: const EdgeInsets.only(top: 6, bottom: 6, left: 16, right: 16),
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
