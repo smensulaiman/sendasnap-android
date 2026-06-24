@@ -86,8 +86,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final top = MediaQuery.paddingOf(context).top;
+    final bottom = MediaQuery.paddingOf(context).bottom;
+
     return Scaffold(
-      // Standard Flutter pattern: scaffold shrinks, scroll view handles the rest.
       resizeToAvoidBottomInset: true,
       body: Container(
         decoration: const BoxDecoration(
@@ -98,163 +100,163 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             stops: [0.0, 0.5, 1.0],
           ),
         ),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnim,
-            child: SlideTransition(
-              position: _slideAnim,
-              child: SingleChildScrollView(
-                keyboardDismissBehavior:
-                    ScrollViewKeyboardDismissBehavior.onDrag,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimens.xxl, vertical: AppDimens.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const Gap(AppDimens.xxl),
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: SlideTransition(
+            position: _slideAnim,
+            child: SingleChildScrollView(
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                AppDimens.xxl,
+                top + AppDimens.lg,
+                AppDimens.xxl,
+                bottom + AppDimens.lg,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Gap(AppDimens.lg),
 
-                    // ── Logo ────────────────────────────────────────────
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.20),
-                            blurRadius: 40,
-                            offset: const Offset(0, 12),
+                  // ── Logo ──────────────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(22),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.18),
+                          blurRadius: 28,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      width: 72,
+                      height: 72,
+                    ),
+                  ),
+                  const Gap(AppDimens.md),
+                  Text(
+                    AppStrings.tagline,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.70),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+
+                  const Gap(AppDimens.xxl),
+
+                  // ── Form card ─────────────────────────────────────────
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(AppDimens.xxl),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.18),
+                      ),
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Sign in',
+                            style: AppTextStyles.headlineMedium.copyWith(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const Gap(4),
+                          Text(
+                            'Enter your credentials to continue',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: Colors.white.withValues(alpha: 0.65),
+                            ),
+                          ),
+                          const Gap(AppDimens.xl),
+
+                          _WhiteField(
+                            hint: AppStrings.emailLabel,
+                            controller: _emailCtrl,
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.email_outlined,
+                            validator: Validators.email,
+                            textInputAction: TextInputAction.next,
+                            onSubmitted: (_) =>
+                                FocusScope.of(context).requestFocus(_passFocus),
+                          ),
+                          const Gap(AppDimens.md),
+
+                          _WhitePasswordField(
+                            hint: AppStrings.passwordLabel,
+                            controller: _passCtrl,
+                            focusNode: _passFocus,
+                            validator: Validators.required,
+                          ),
+                          const Gap(AppDimens.md),
+
+                          _RememberMeRow(
+                            value: _rememberMe,
+                            onChanged: (v) =>
+                                setState(() => _rememberMe = v ?? false),
+                          ),
+                          const Gap(AppDimens.xl),
+
+                          SizedBox(
+                            width: double.infinity,
+                            height: AppDimens.buttonHeight,
+                            child: ElevatedButton(
+                              onPressed: _isLoading ? null : _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: AppColors.primary,
+                                elevation: 0,
+                                disabledBackgroundColor:
+                                    Colors.white.withValues(alpha: 0.4),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                              ),
+                              child: _isLoading
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.primary,
+                                      ),
+                                    )
+                                  : Text(
+                                      AppStrings.login,
+                                      style: AppTextStyles.titleMedium.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                            ),
                           ),
                         ],
                       ),
-                      child: Image.asset(
-                        'assets/images/logo.png',
-                        width: 110,
-                        height: 110,
-                      ),
                     ),
-                    const Gap(AppDimens.lg),
-                    Text(
-                      AppStrings.tagline,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.70),
-                        letterSpacing: 0.5,
-                      ),
+                  ),
+
+                  const Gap(AppDimens.md),
+                  Text(
+                    AppStrings.copyright,
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: Colors.white.withValues(alpha: 0.35),
                     ),
-
-                    const Gap(AppDimens.xxxl),
-
-                    // ── Form card ───────────────────────────────────────
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(AppDimens.xxl),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.10),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.18),
-                        ),
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Sign in',
-                              style: AppTextStyles.headlineMedium.copyWith(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const Gap(4),
-                            Text(
-                              'Enter your credentials to continue',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.white.withValues(alpha: 0.65),
-                              ),
-                            ),
-                            const Gap(AppDimens.xl),
-
-                            _GlassField(
-                              hint: AppStrings.emailLabel,
-                              controller: _emailCtrl,
-                              keyboardType: TextInputType.emailAddress,
-                              prefixIcon: Icons.email_outlined,
-                              validator: Validators.email,
-                              textInputAction: TextInputAction.next,
-                              onSubmitted: (_) => FocusScope.of(context)
-                                  .requestFocus(_passFocus),
-                            ),
-                            const Gap(AppDimens.md),
-
-                            _GlassPasswordField(
-                              hint: AppStrings.passwordLabel,
-                              controller: _passCtrl,
-                              focusNode: _passFocus,
-                              validator: Validators.required,
-                            ),
-                            const Gap(AppDimens.md),
-
-                            _RememberMeRow(
-                              value: _rememberMe,
-                              onChanged: (v) =>
-                                  setState(() => _rememberMe = v ?? false),
-                            ),
-                            const Gap(AppDimens.xl),
-
-                            SizedBox(
-                              width: double.infinity,
-                              height: AppDimens.buttonHeight,
-                              child: ElevatedButton(
-                                onPressed: _isLoading ? null : _login,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: AppColors.primary,
-                                  elevation: 0,
-                                  disabledBackgroundColor:
-                                      Colors.white.withValues(alpha: 0.4),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: AppColors.primary,
-                                        ),
-                                      )
-                                    : Text(
-                                        AppStrings.login,
-                                        style:
-                                            AppTextStyles.titleMedium.copyWith(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 15,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const Gap(AppDimens.xxl),
-                    Text(
-                      AppStrings.copyright,
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: Colors.white.withValues(alpha: 0.35),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const Gap(AppDimens.lg),
-                  ],
-                ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           ),
@@ -264,42 +266,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   }
 }
 
-// ── Glass-style input field ────────────────────────────────────────────────
+// ── White input field ──────────────────────────────────────────────────────
 
-InputDecoration _glassDecoration({
+InputDecoration _whiteDecoration({
   required String hint,
   required IconData prefixIcon,
   Widget? suffixIcon,
 }) {
   return InputDecoration(
     hintText: hint,
-    hintStyle: AppTextStyles.bodySmall
-        .copyWith(color: Colors.white.withValues(alpha: 0.55)),
-    prefixIcon:
-        Icon(prefixIcon, color: Colors.white.withValues(alpha: 0.8), size: 20),
+    hintStyle:
+        AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+    prefixIcon: Icon(prefixIcon, color: AppColors.primary, size: 20),
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: Colors.white.withValues(alpha: 0.12),
+    fillColor: Colors.white,
     floatingLabelBehavior: FloatingLabelBehavior.never,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
+      borderSide: BorderSide.none,
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.25)),
+      borderSide: BorderSide.none,
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Colors.white, width: 1.5),
+      borderSide: const BorderSide(color: AppColors.primary, width: 2),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFFF8A80)),
+      borderSide: const BorderSide(color: AppColors.error),
     ),
     focusedErrorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
-      borderSide: const BorderSide(color: Color(0xFFFF8A80), width: 1.5),
+      borderSide: const BorderSide(color: AppColors.error, width: 2),
     ),
     contentPadding: const EdgeInsets.symmetric(
       horizontal: AppDimens.lg,
@@ -308,7 +309,7 @@ InputDecoration _glassDecoration({
   );
 }
 
-class _GlassField extends StatelessWidget {
+class _WhiteField extends StatelessWidget {
   final String hint;
   final TextEditingController? controller;
   final TextInputType keyboardType;
@@ -317,7 +318,7 @@ class _GlassField extends StatelessWidget {
   final TextInputAction textInputAction;
   final ValueChanged<String>? onSubmitted;
 
-  const _GlassField({
+  const _WhiteField({
     required this.hint,
     this.controller,
     this.keyboardType = TextInputType.text,
@@ -335,19 +336,19 @@ class _GlassField extends StatelessWidget {
       validator: validator,
       textInputAction: textInputAction,
       onFieldSubmitted: onSubmitted,
-      style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
-      decoration: _glassDecoration(hint: hint, prefixIcon: prefixIcon),
+      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      decoration: _whiteDecoration(hint: hint, prefixIcon: prefixIcon),
     );
   }
 }
 
-class _GlassPasswordField extends StatefulWidget {
+class _WhitePasswordField extends StatefulWidget {
   final String hint;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator;
 
-  const _GlassPasswordField({
+  const _WhitePasswordField({
     required this.hint,
     this.controller,
     this.focusNode,
@@ -355,10 +356,10 @@ class _GlassPasswordField extends StatefulWidget {
   });
 
   @override
-  State<_GlassPasswordField> createState() => _GlassPasswordFieldState();
+  State<_WhitePasswordField> createState() => _WhitePasswordFieldState();
 }
 
-class _GlassPasswordFieldState extends State<_GlassPasswordField> {
+class _WhitePasswordFieldState extends State<_WhitePasswordField> {
   bool _obscure = true;
 
   @override
@@ -369,14 +370,14 @@ class _GlassPasswordFieldState extends State<_GlassPasswordField> {
       obscureText: _obscure,
       validator: widget.validator,
       textInputAction: TextInputAction.done,
-      style: AppTextStyles.bodyMedium.copyWith(color: Colors.white),
-      decoration: _glassDecoration(
+      style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
+      decoration: _whiteDecoration(
         hint: widget.hint,
         prefixIcon: Icons.lock_outline_rounded,
         suffixIcon: IconButton(
           icon: Icon(
             _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-            color: Colors.white.withValues(alpha: 0.7),
+            color: AppColors.textSecondary,
             size: 20,
           ),
           onPressed: () => setState(() => _obscure = !_obscure),
