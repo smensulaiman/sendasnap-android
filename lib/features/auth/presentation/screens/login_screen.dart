@@ -66,7 +66,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     if (!(_formKey.currentState?.validate() ?? false)) return;
     setState(() => _isLoading = true);
     try {
-      await ref.read(authProvider.notifier).login(
+      await ref
+          .read(authProvider.notifier)
+          .login(
             _emailCtrl.text.trim(),
             _passCtrl.text,
             rememberMe: _rememberMe,
@@ -125,10 +127,7 @@ class _AnimatedHeader extends StatelessWidget {
   final Animation<double> animation;
   final double height;
 
-  const _AnimatedHeader({
-    required this.animation,
-    required this.height,
-  });
+  const _AnimatedHeader({required this.animation, required this.height});
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +164,7 @@ class _AnimatedHeader extends StatelessWidget {
               height: 160,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.white.withOpacity(0.06),
+                color: AppColors.white.withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -177,7 +176,7 @@ class _AnimatedHeader extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.white.withOpacity(0.05),
+                color: AppColors.white.withValues(alpha: 0.05),
               ),
             ),
           ),
@@ -189,35 +188,16 @@ class _AnimatedHeader extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: AppDimens.xxl),
-                  Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: AppColors.white.withOpacity(0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: AppColors.white.withOpacity(0.4), width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.local_shipping_rounded,
-                      color: AppColors.white,
-                      size: 36,
-                    ),
+                  Image.asset(
+                    'assets/images/logo.png',
+                    width: 120,
+                    height: 120,
                   ),
                   const SizedBox(height: AppDimens.lg),
                   Text(
-                    AppStrings.appName,
-                    style: AppTextStyles.displayLarge.copyWith(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  const SizedBox(height: AppDimens.xs),
-                  Text(
                     AppStrings.tagline,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.white.withOpacity(0.75),
+                      color: AppColors.white.withValues(alpha: 0.75),
                     ),
                   ),
                 ],
@@ -259,7 +239,11 @@ class _FormCard extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: const EdgeInsets.fromLTRB(
-          AppDimens.xxl, AppDimens.xxl, AppDimens.xxl, AppDimens.lg),
+        AppDimens.xxl,
+        AppDimens.xxl,
+        AppDimens.xxl,
+        AppDimens.lg,
+      ),
       child: Form(
         key: formKey,
         child: Column(
@@ -267,8 +251,7 @@ class _FormCard extends StatelessWidget {
           children: [
             Text('Welcome back', style: AppTextStyles.headlineMedium),
             const SizedBox(height: AppDimens.xs),
-            Text('Sign in to continue',
-                style: AppTextStyles.bodySmall),
+            Text('Sign in to continue', style: AppTextStyles.bodySmall),
             const SizedBox(height: AppDimens.xxl),
             AppTextField(
               label: AppStrings.emailLabel,
@@ -287,10 +270,7 @@ class _FormCard extends StatelessWidget {
               textInputAction: TextInputAction.done,
             ),
             const SizedBox(height: AppDimens.md),
-            _RememberMeRow(
-              value: rememberMe,
-              onChanged: onRememberMeChanged,
-            ),
+            _RememberMeRow(value: rememberMe, onChanged: onRememberMeChanged),
             const SizedBox(height: AppDimens.xxl),
             AppButton(
               label: isLoading ? AppStrings.loggingIn : AppStrings.login,
@@ -330,7 +310,8 @@ class _RememberMeRow extends StatelessWidget {
             onChanged: onChanged,
             activeColor: AppColors.primary,
             shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4)),
+              borderRadius: BorderRadius.circular(4),
+            ),
           ),
         ),
         const SizedBox(width: AppDimens.sm),

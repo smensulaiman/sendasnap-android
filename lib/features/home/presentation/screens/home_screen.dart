@@ -55,7 +55,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: AppColors.white,
         surfaceTintColor: AppColors.white,
         elevation: 0,
-        title: Text(AppStrings.appName, style: AppTextStyles.appBarTitle),
         actions: [
           IconButton(
             icon: const Icon(
