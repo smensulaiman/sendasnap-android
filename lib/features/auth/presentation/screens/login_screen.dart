@@ -285,8 +285,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   curve: Curves.easeInOut,
                   decoration: BoxDecoration(
                     color: AppColors.primary,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(keyboardVisible ? 20 : 36),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(36),
                     ),
                   ),
                   child: Stack(
