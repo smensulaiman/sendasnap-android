@@ -56,27 +56,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: AppColors.scaffold,
         body: Column(
           children: [
-            // ── Gradient header with floating search bar ─────────────
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                _GradientHeader(
-                  name: user?.name ?? '',
-                  email: user?.email ?? '',
-                  role: user?.role ?? '',
-                  avatarUrl: user?.avatarUrl,
-                  vendorName: vendor?.name,
-                  vendorAddress: vendor?.formattedAddress,
-                  onNotifications: () =>
-                      context.push('/coming-soon', extra: 'Notifications'),
-                ),
-                Positioned(
-                  left: AppDimens.lg,
-                  right: AppDimens.lg,
-                  bottom: -28,
-                  child: _SearchBar(onTap: () => _openSearchSheet(context)),
-                ),
-              ],
+            // ── Gradient header ──────────────────────────────────────
+            _GradientHeader(
+              name: user?.name ?? '',
+              email: user?.email ?? '',
+              role: user?.role ?? '',
+              avatarUrl: user?.avatarUrl,
+              vendorName: vendor?.name,
+              vendorAddress: vendor?.formattedAddress,
+              onNotifications: () =>
+                  context.push('/coming-soon', extra: 'Notifications'),
             ),
 
             // ── Scrollable content ───────────────────────────────────
@@ -87,7 +76,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(
-                      AppDimens.lg, 44, AppDimens.lg, 100),
+                      AppDimens.lg, AppDimens.lg, AppDimens.lg, 100),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -102,10 +91,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               icon: Icons.search_rounded,
                               label: AppStrings.searchVehicle,
                               subtitle: 'By chassis or name',
-                              gradient: const [
-                                Color(0xFF1E88E5),
-                                Color(0xFF1565C0),
-                              ],
+                              background: const Color(0xFFE3F0FF),
+                              accent: const Color(0xFF1565C0),
                               onTap: () => _openSearchSheet(context),
                             ),
                           ),
@@ -115,10 +102,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               icon: Icons.warehouse_rounded,
                               label: AppStrings.browseYard,
                               subtitle: 'Browse by yard',
-                              gradient: const [
-                                Color(0xFF1565C0),
-                                Color(0xFF0D3C6E),
-                              ],
+                              background: const Color(0xFFE7F8F0),
+                              accent: const Color(0xFF1B9E6B),
                               onTap: () =>
                                   _openSearchSheet(context, yardTab: true),
                             ),
@@ -222,7 +207,7 @@ class _GradientHeader extends StatelessWidget {
     final topPad = MediaQuery.paddingOf(context).top;
     return Container(
       padding: EdgeInsets.fromLTRB(
-          AppDimens.lg, topPad + AppDimens.md, AppDimens.lg, AppDimens.xxl + 20),
+          AppDimens.lg, topPad + AppDimens.md, AppDimens.lg, AppDimens.xl),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -376,147 +361,66 @@ class _GlassChip extends StatelessWidget {
   }
 }
 
-// ── Floating search bar ───────────────────────────────────────────────────
-
-class _SearchBar extends StatelessWidget {
-  final VoidCallback onTap;
-  const _SearchBar({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(18),
-      elevation: 0,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: onTap,
-        child: Ink(
-          height: 58,
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0D3C6E).withValues(alpha: 0.18),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              const Gap(AppDimens.lg),
-              Icon(Icons.search_rounded,
-                  color: AppColors.primary, size: 22),
-              const Gap(AppDimens.md),
-              Expanded(
-                child: Text(
-                  'Search vehicles, chassis…',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1E88E5), AppColors.primary],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(Icons.tune_rounded,
-                      color: AppColors.white, size: 20),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ── Gradient action tile ──────────────────────────────────────────────────
+// ── Light action tile ─────────────────────────────────────────────────────
 
 class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final String subtitle;
-  final List<Color> gradient;
+  final Color background;
+  final Color accent;
   final VoidCallback onTap;
 
   const _ActionTile({
     required this.icon,
     required this.label,
     required this.subtitle,
-    required this.gradient,
+    required this.background,
+    required this.accent,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    const radius = BorderRadius.all(Radius.circular(20));
     return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppDimens.cardRadius),
+      color: background,
+      borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
-        borderRadius: BorderRadius.circular(AppDimens.cardRadius),
         onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: gradient,
-            ),
-            borderRadius: BorderRadius.circular(AppDimens.cardRadius),
-            boxShadow: [
-              BoxShadow(
-                color: gradient.last.withValues(alpha: 0.35),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+        child: Padding(
+          padding: const EdgeInsets.all(AppDimens.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: accent,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(icon, color: AppColors.white, size: 22),
+              ),
+              const Gap(AppDimens.md),
+              Text(
+                label,
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Gap(2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: accent.withValues(alpha: 0.65),
+                  fontSize: 11,
+                ),
               ),
             ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(AppDimens.lg),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.20),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: AppColors.white, size: 22),
-                ),
-                const Gap(AppDimens.md),
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: AppColors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const Gap(2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
