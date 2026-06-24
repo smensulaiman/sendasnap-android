@@ -16,24 +16,26 @@ class AppSnackbar {
     final color = isError
         ? AppColors.error
         : isSuccess
-            ? AppColors.success
-            : AppColors.primary;
+        ? AppColors.success
+        : AppColors.primary;
     final bgColor = isError
         ? AppColors.errorLight
         : isSuccess
-            ? AppColors.successLight
-            : AppColors.primaryLight;
+        ? AppColors.successLight
+        : AppColors.primaryLight;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message,
-            style: AppTextStyles.bodyMedium.copyWith(color: color)),
+        content: Text(
+          message,
+          style: AppTextStyles.bodyMedium.copyWith(color: color),
+        ),
         backgroundColor: bgColor,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.all(AppDimens.lg),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimens.md),
-          side: BorderSide(color: color.withOpacity(0.3)),
+          side: BorderSide(color: color.withValues(alpha: 0.3)),
         ),
         duration: duration,
       ),

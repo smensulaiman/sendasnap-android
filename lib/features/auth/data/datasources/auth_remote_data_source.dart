@@ -10,17 +10,13 @@ class AuthResult {
   final VendorModel? vendor;
   final String token;
 
-  const AuthResult({
-    required this.user,
-    this.vendor,
-    required this.token,
-  });
+  const AuthResult({required this.user, this.vendor, required this.token});
 }
 
 class AuthRemoteDataSource {
   final DioClient _client;
 
-  AuthRemoteDataSource({required DioClient client}) : _client = client;
+  AuthRemoteDataSource({required this._client});
 
   Future<AuthResult> login(String email, String password) async {
     try {
@@ -31,8 +27,7 @@ class AuthRemoteDataSource {
       return _parseAuthResult(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       final msg = _extractMessage(e) ?? 'Login failed';
-      throw AuthException(
-          message: msg, statusCode: e.response?.statusCode);
+      throw AuthException(message: msg, statusCode: e.response?.statusCode);
     }
   }
 
@@ -42,8 +37,7 @@ class AuthRemoteDataSource {
       return _parseAuthResult(res.data as Map<String, dynamic>);
     } on DioException catch (e) {
       final msg = _extractMessage(e) ?? 'Failed to get profile';
-      throw ServerException(
-          message: msg, statusCode: e.response?.statusCode);
+      throw ServerException(message: msg, statusCode: e.response?.statusCode);
     }
   }
 
@@ -63,8 +57,7 @@ class AuthRemoteDataSource {
       );
     } on DioException catch (e) {
       final msg = _extractMessage(e) ?? 'Failed to change password';
-      throw ServerException(
-          message: msg, statusCode: e.response?.statusCode);
+      throw ServerException(message: msg, statusCode: e.response?.statusCode);
     }
   }
 

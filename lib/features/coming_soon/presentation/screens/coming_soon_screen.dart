@@ -30,14 +30,17 @@ class _ComingSoonScreenState extends State<ComingSoonScreen>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        duration: const Duration(milliseconds: 1200), vsync: this)
-      ..repeat(reverse: true);
-    _bounce = Tween<double>(begin: 0, end: 12).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
-    _fade = Tween<double>(begin: 0.5, end: 1).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..repeat(reverse: true);
+    _bounce = Tween<double>(
+      begin: 0,
+      end: 12,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _fade = Tween<double>(
+      begin: 0.5,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -48,8 +51,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen>
 
   @override
   Widget build(BuildContext context) {
-    final feature =
-        widget.featureName ?? AppStrings.moreFeatures;
+    final feature = widget.featureName ?? AppStrings.moreFeatures;
 
     return Scaffold(
       backgroundColor: AppColors.scaffold,
@@ -58,11 +60,16 @@ class _ComingSoonScreenState extends State<ComingSoonScreen>
               backgroundColor: AppColors.white,
               surfaceTintColor: AppColors.white,
               elevation: 0,
-              title: Text(AppStrings.comingSoon,
-                  style: AppTextStyles.appBarTitle),
+              title: Text(
+                AppStrings.comingSoon,
+                style: AppTextStyles.appBarTitle,
+              ),
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                    color: AppColors.textPrimary, size: 20),
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: AppColors.textPrimary,
+                  size: 20,
+                ),
                 onPressed: () => context.pop(),
               ),
             )
@@ -93,7 +100,7 @@ class _ComingSoonScreenState extends State<ComingSoonScreen>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 24,
                           offset: const Offset(0, 8),
                         ),
@@ -116,8 +123,9 @@ class _ComingSoonScreenState extends State<ComingSoonScreen>
               const Gap(AppDimens.md),
               Text(
                 AppStrings.comingSoonSubtitle(feature),
-                style: AppTextStyles.bodyMedium
-                    .copyWith(color: AppColors.textSecondary),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
               const Gap(AppDimens.xxxl),
@@ -143,8 +151,9 @@ class _PulsingDotsState extends State<_PulsingDots>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        duration: const Duration(milliseconds: 1500), vsync: this)
-      ..repeat();
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat();
   }
 
   @override
@@ -163,17 +172,13 @@ class _PulsingDotsState extends State<_PulsingDots>
           children: List.generate(3, (i) {
             final delay = i * 0.2;
             final t = ((_ctrl.value - delay) % 1.0 + 1.0) % 1.0;
-            final scale = 0.6 +
-                0.4 *
-                    (t < 0.5
-                        ? 2 * t
-                        : 2 * (1 - t));
+            final scale = 0.6 + 0.4 * (t < 0.5 ? 2 * t : 2 * (1 - t));
             return Container(
               margin: const EdgeInsets.symmetric(horizontal: 4),
               width: 8 * scale,
               height: 8 * scale,
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.5 + 0.5 * scale),
+                color: AppColors.primary.withValues(alpha: 0.5 + 0.5 * scale),
                 shape: BoxShape.circle,
               ),
             );
