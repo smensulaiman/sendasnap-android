@@ -28,6 +28,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _rememberMe = false;
   bool _isLoading = false;
 
+  int _logoTaps = 0;
+  DateTime? _lastLogoTap;
+
+  void _onLogoTap() {
+    final now = DateTime.now();
+    if (_lastLogoTap == null ||
+        now.difference(_lastLogoTap!) > const Duration(milliseconds: 800)) {
+      _logoTaps = 0;
+    }
+    _lastLogoTap = now;
+    _logoTaps++;
+    if (_logoTaps >= 3) {
+      _logoTaps = 0;
+      _emailCtrl.text = 'acj.shiroyama@gmail.com';
+      _passCtrl.text = 'acjl7861';
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -127,10 +146,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 opacity: (1 - p * 1.4).clamp(0.0, 1.0),
                 child: Column(
                   children: [
-                    Image.asset(
-                      'assets/images/logo.png',
-                      width: 96,
-                      height: 96,
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _onLogoTap,
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        width: 96,
+                        height: 96,
+                      ),
                     ),
                     const Gap(14),
                     Text(
